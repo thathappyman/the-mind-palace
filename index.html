@@ -132,6 +132,28 @@ select option{background:var(--s2);}
 .meet-sch{background:var(--al);color:var(--accent);}
 .meet-done{background:var(--gl);color:var(--green);}
 .meet-can{background:var(--rl);color:var(--red);}
+/* News cards */
+.news-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px;}
+.news-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;}
+.news-card-thumb{height:110px;display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;}
+.news-card-body{padding:11px 12px;flex:1;display:flex;flex-direction:column;}
+.news-card-title{font-size:12.5px;font-weight:600;line-height:1.4;margin-bottom:4px;color:var(--text);}
+.news-card-meta{font-size:10px;color:var(--t4);margin-bottom:6px;}
+.news-card-summary{font-size:11.5px;color:var(--t3);line-height:1.5;flex:1;}
+.news-card-footer{display:flex;gap:5px;margin-top:8px;}
+.news-list-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);}
+.news-list-item:last-child{border-bottom:none;}
+.news-list-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.news-list-body{flex:1;}
+.news-list-title{font-size:12.5px;font-weight:500;color:var(--t2);line-height:1.4;}
+.news-list-meta{font-size:10px;color:var(--t4);margin-top:2px;}
+.news-list-summary{font-size:11.5px;color:var(--t3);line-height:1.5;margin-top:5px;display:none;}
+.news-list-summary.open{display:block;}
+.topic-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;border:1px solid transparent;}
+.topic-chip.active{background:var(--al);color:var(--accent);border-color:var(--accent);}
+.topic-chip.inactive{background:var(--s3);color:var(--t3);}
+.topic-chip.inactive:hover{background:var(--s2);color:var(--t2);}
+@media(max-width:700px){.news-cards{grid-template-columns:1fr;}}
 /* Engagement item */
 .eng-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;margin-bottom:7px;}
 .eng-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
@@ -199,6 +221,19 @@ select option{background:var(--s2);}
   <div class="g2">
     <div><div class="card"><div class="ct">Upcoming Meetings</div><div id="dash-meets"></div></div></div>
     <div><div class="card"><div class="ct">Active Projects</div><div id="dash-projs"></div></div></div>
+  </div>
+  <!-- NEWS PANEL -->
+  <div class="card" id="news-panel" style="margin-top:4px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+      <div class="ct" style="margin-bottom:0;">📰 Intelligence Feed</div>
+      <div class="row" style="gap:6px;flex-wrap:wrap;">
+        <div id="news-topic-chips" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+        <button class="btn bg bsm" onclick="openAddTopicModal()" title="Add topic">+ Topic</button>
+        <button class="btn bg bsm" id="news-refresh-btn" onclick="refreshNews(true)">🔄 Refresh</button>
+      </div>
+    </div>
+    <div id="news-last-updated" style="font-size:10px;color:var(--t4);margin-bottom:12px;"></div>
+    <div id="news-content"><div class="es"><h4>No topics yet</h4><p>Click "+ Topic" to add subjects you want to follow</p></div></div>
   </div>
 </div>
 
@@ -360,7 +395,7 @@ select option{background:var(--s2);}
     <div class="field"><label>Sync Key (secret phrase shared across devices)</label><input type="text" id="s-sync-key" placeholder="e.g. mindpalace-yourname-2026"></div>
     <div class="row" style="gap:8px;">
       <button class="btn bp bsm" onclick="saveSupabase()">Save & Connect</button>
-      <button class="btn bg bsm" onclick="pullAll().then(ok=>showToast(ok?'✅ Data pulled from cloud!':'⚠️ Pull failed — check credentials','ok'?'success':'error'))">↓ Pull from Cloud</button>
+      <button class="btn bg bsm" onclick="pullAll().then(r=>showToast(r.ok?'✅ Data pulled!':'⚠️ '+r.err,r.ok?'success':'error'))">↓ Pull from Cloud</button>
       <span id="sync-status-text" style="font-size:11px;color:var(--t4);"></span>
     </div>
   </div>
@@ -379,6 +414,15 @@ select option{background:var(--s2);}
     <p style="font-size:12px;color:var(--t3);margin-bottom:10px;">Daily alerts at <strong>1:30 PM</strong> and <strong>4:00 PM</strong> for pending tasks and upcoming meetings.</p>
     <button class="btn bg bsm" onclick="enableReminders()">🔔 Enable Desktop Notifications</button>
   </div>
+  <div class="card">
+    <div class="ct">Intelligence Feed — Topics</div>
+    <p style="font-size:12px;color:var(--t3);margin-bottom:12px;">Topics the news panel follows. Updates automatically when you open the app.</p>
+    <div id="settings-topics" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;"></div>
+    <div class="row" style="gap:8px;">
+      <input type="text" id="s-new-topic" placeholder="e.g. EdTech, Skill Development India…" style="flex:1;" onkeydown="if(event.key==='Enter')saveTopicFromSettings()">
+      <button class="btn bp bsm" onclick="saveTopicFromSettings()">+ Add</button>
+    </div>
+  </div>
   <div class="card" style="border-color:rgba(239,68,68,.3);">
     <div class="ct" style="color:var(--red);">Danger Zone</div>
     <button class="btn bd bsm" onclick="clearAll()">🗑 Delete All Local Data</button>
@@ -396,7 +440,7 @@ select option{background:var(--s2);}
 // ═══════════════════════════════════════════════════════════
 const K={settings:'mp_settings',annual:'mp_annual',quarterly:'mp_quarterly',
   daily:'mp_daily',todos:'mp_todos',convs:'mp_convs',
-  projects:'mp_projects',outreach:'mp_outreach',meetings:'mp_meetings'};
+  projects:'mp_projects',outreach:'mp_outreach',meetings:'mp_meetings',news:'mp_news'};
 
 const load=k=>{try{return JSON.parse(localStorage.getItem(k))||null;}catch{return null;}};
 const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
@@ -439,10 +483,17 @@ const SUPA={
   },
 
   async pullAll(){
-    const h=this._h();const s=getSettings();if(!h||!s.syncKey)return false;
+    const h=this._h();const s=getSettings();if(!h||!s.syncKey)return{ok:false,err:'Missing URL, key or sync key'};
     try{
       const r=await fetch(this._url()+`?sync_key=eq.${encodeURIComponent(s.syncKey)}&select=collection,record_id,payload`,{headers:h});
-      if(!r.ok)return false;
+      if(!r.ok){
+        let msg='HTTP '+r.status+' — ';
+        try{const j=await r.clone().json();msg+=j.message||j.hint||r.statusText;}catch(e){msg+=r.statusText;}
+        if(r.status===401||r.status===403)msg='❌ Invalid API key — paste the anon/public key (not service_role)';
+        else if(r.status===404)msg='❌ Table not found — run supabase-setup.sql in Supabase SQL Editor';
+        else if(r.status===503||r.status===0)msg='❌ Project unreachable — open supabase.com and Resume your project';
+        return{ok:false,err:msg};
+      }
       const recs=await r.json();
       const g={};recs.forEach(r=>{(g[r.collection]=g[r.collection]||{})[r.record_id]=r.payload;});
       if(g.annual)save(K.annual,g.annual.singleton||getAnnual());
@@ -453,8 +504,8 @@ const SUPA={
       if(g.projects)save(K.projects,Object.values(g.projects));
       if(g.outreach)save(K.outreach,Object.values(g.outreach));
       if(g.meetings)save(K.meetings,Object.values(g.meetings));
-      setSyncDot(true);return true;
-    }catch(e){setSyncDot(false);return false;}
+      setSyncDot(true);return{ok:true,err:''};
+    }catch(e){setSyncDot(false);return{ok:false,err:'Network error — '+e.message};}
   }
 };
 
@@ -538,6 +589,8 @@ function renderDashboard(){
       <div style="font-size:10px;color:var(--t4);">Due ${fmtDate(p.endDate)}</div></div>
       <span class="badge b-a">In Progress</span></div>`).join('')
     :`<div class="es" style="padding:12px;"><p><span style="cursor:pointer;color:var(--accent)" onclick="navigate('projects')">Add projects →</span></p></div>`;
+  // Render news panel chips (content loads separately via initNewsPanel)
+  renderNewsPanelTopicChips();
 }
 
 function dashToggle(id){const t=todayStr(),todos=getTodos();const item=todos[t]&&todos[t].find(x=>x.id===id);
@@ -1234,13 +1287,14 @@ function renderMeetings(){
     <div style="overflow-x:auto;">
     <table style="width:100%;border-collapse:collapse;font-size:12px;">
       <thead><tr style="background:var(--s2);">
-        ${['S.No','Date','Institution','Name','Designation','State','District','Key Agenda','Status','Actions'].map(h=>`<th style="padding:10px 12px;text-align:left;color:var(--t4);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;border-bottom:1px solid var(--border);">${h}</th>`).join('')}
+        ${['S.No','Date','Time','Institution','Name','Designation','State','District','Key Agenda','Status','Actions'].map(h=>`<th style="padding:10px 12px;text-align:left;color:var(--t4);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;border-bottom:1px solid var(--border);">${h}</th>`).join('')}
       </tr></thead>
       <tbody>${meets.map((m,i)=>{
         const sc=m.status==='scheduled'?'meet-sch':m.status==='completed'?'meet-done':'meet-can';
         return`<tr style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="viewMeeting('${m.id}')">
           <td style="padding:10px 12px;color:var(--t3);">${m.serialNo||i+1}</td>
           <td style="padding:10px 12px;white-space:nowrap;">${fmtDate(m.date)}</td>
+          <td style="padding:10px 12px;white-space:nowrap;">${m.time||'—'}</td>
           <td style="padding:10px 12px;font-weight:500;">${esc(m.institution||'—')}</td>
           <td style="padding:10px 12px;">${esc(m.name||'—')}</td>
           <td style="padding:10px 12px;color:var(--t3);">${esc(m.designation||'—')}</td>
@@ -1301,9 +1355,10 @@ function closeMeetDetail(){document.getElementById('meet-detail').style.display=
 
 function openNewMeetModal(){const meets=getMeetings();const nextSerial=meets.length?Math.max(...meets.map(m=>m.serialNo||0))+1:1;
   showModal('New Meeting',`
-    <div class="g2">
+    <div class="g3">
       <div class="field"><label>Serial No.</label><input type="number" id="m-m-sn" value="${nextSerial}"></div>
       <div class="field"><label>Date *</label><input type="date" id="m-m-d" value="${todayStr()}"></div>
+      <div class="field"><label>Time</label><input type="time" id="m-m-t" value="09:00"></div>
     </div>
     <div class="field"><label>Institution *</label><input type="text" id="m-m-inst" placeholder="ABC College / Ministry of Education"></div>
     <div class="g2">
@@ -1327,6 +1382,7 @@ function saveMeeting(andGcal){const inst=document.getElementById('m-m-inst').val
     date:document.getElementById('m-m-d').value,institution:inst,
     name:document.getElementById('m-m-nm').value.trim(),designation:document.getElementById('m-m-des').value.trim(),
     state:document.getElementById('m-m-st').value.trim(),district:document.getElementById('m-m-di').value.trim(),
+    time:document.getElementById('m-m-t').value||'09:00',
     keyAgenda:document.getElementById('m-m-ag').value.trim(),status:document.getElementById('m-m-s').value,linkedConvId:null};
   meets.push(m);save(K.meetings,meets);SUPA.push('meetings',m.id,m);closeModal();renderMeetings();showToast('✅ Meeting scheduled!','success');
   // schedule reminder
@@ -1334,9 +1390,10 @@ function saveMeeting(andGcal){const inst=document.getElementById('m-m-inst').val
 
 function openEditMeeting(id){const m=getMeetings().find(x=>x.id===id);if(!m)return;
   showModal('Edit Meeting',`
-    <div class="g2">
+    <div class="g3">
       <div class="field"><label>Serial No.</label><input type="number" id="m-m-sn" value="${m.serialNo||''}"></div>
       <div class="field"><label>Date</label><input type="date" id="m-m-d" value="${m.date||''}"></div>
+      <div class="field"><label>Time</label><input type="time" id="m-m-t" value="${m.time||'09:00'}"></div>
     </div>
     <div class="field"><label>Institution</label><input type="text" id="m-m-inst" value="${esc(m.institution||'')}"></div>
     <div class="g2">
@@ -1356,7 +1413,7 @@ function openEditMeeting(id){const m=getMeetings().find(x=>x.id===id);if(!m)retu
     <div class="row" style="gap:8px;justify-content:flex-end;margin-top:14px;"><button class="btn bg" onclick="closeModal()">Cancel</button><button class="btn bp" onclick="updateMeeting()">Save</button></div>`);}
 
 function updateMeeting(){const id=document.getElementById('m-m-id').value;const meets=getMeetings();const m=meets.find(x=>x.id===id);if(!m)return;
-  m.serialNo=parseInt(document.getElementById('m-m-sn').value)||m.serialNo;m.date=document.getElementById('m-m-d').value;
+  m.serialNo=parseInt(document.getElementById('m-m-sn').value)||m.serialNo;m.date=document.getElementById('m-m-d').value;m.time=document.getElementById('m-m-t').value||'09:00';
   m.institution=document.getElementById('m-m-inst').value.trim();m.name=document.getElementById('m-m-nm').value.trim();
   m.designation=document.getElementById('m-m-des').value.trim();m.state=document.getElementById('m-m-st').value.trim();
   m.district=document.getElementById('m-m-di').value.trim();m.keyAgenda=document.getElementById('m-m-ag').value.trim();
@@ -1379,9 +1436,12 @@ function doLinkMeetConv(meetId){const convId=document.getElementById('m-ml-c').v
 // GOOGLE CALENDAR & ICS
 function addToGCal(id){const meets=getMeetings();const m=meets.find(x=>x.id===id);if(!m)return;
   const d=m.date.replace(/-/g,'');
+  const t=(m.time||'09:00').replace(':','');
+  const endH=String(parseInt(t.slice(0,2))+1).padStart(2,'0');
+  const endT=endH+t.slice(2);
   const params=new URLSearchParams({action:'TEMPLATE',
     text:`Meeting at ${m.institution}${m.designation&&m.name?' — '+m.name+' ('+m.designation+')':''}`,
-    dates:`${d}T090000/${d}T100000`,
+    dates:`${d}T${t}00/${d}T${endT}00`,
     details:m.keyAgenda+(m.name?'\n\nWith: '+m.name+' ('+m.designation+')':''),
     location:[m.district,m.state].filter(Boolean).join(', ')});
   window.open('https://calendar.google.com/calendar/render?'+params.toString(),'_blank');
@@ -1389,7 +1449,9 @@ function addToGCal(id){const meets=getMeetings();const m=meets.find(x=>x.id===id
 
 function downloadICS(id){const meets=getMeetings();const m=meets.find(x=>x.id===id);if(!m)return;
   const d=m.date.replace(/-/g,'');const uid=genId()+'@mindpalace';
-  const ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//The Mind Palace//EN\r\nBEGIN:VEVENT\r\nUID:${uid}\r\nDTSTAMP:${new Date().toISOString().replace(/[-:.]/g,'').slice(0,15)}Z\r\nDTSTART:${d}T090000\r\nDTEND:${d}T100000\r\nSUMMARY:Meeting at ${m.institution}\r\nDESCRIPTION:${(m.keyAgenda||'').replace(/\n/g,'\\n')} — With: ${m.name||''} (${m.designation||''})\r\nLOCATION:${[m.district,m.state].filter(Boolean).join(', ')}\r\nEND:VEVENT\r\nEND:VCALENDAR`;
+  const t=(m.time||'09:00').replace(':','');
+  const endH=String(parseInt(t.slice(0,2))+1).padStart(2,'0');const endT=endH+t.slice(2);
+  const ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//The Mind Palace//EN\r\nBEGIN:VEVENT\r\nUID:${uid}\r\nDTSTAMP:${new Date().toISOString().replace(/[-:.]/g,'').slice(0,15)}Z\r\nDTSTART:${d}T${t}00\r\nDTEND:${d}T${endT}00\r\nSUMMARY:Meeting at ${m.institution}\r\nDESCRIPTION:${(m.keyAgenda||'').replace(/\n/g,'\\n')} — With: ${m.name||''} (${m.designation||''})\r\nLOCATION:${[m.district,m.state].filter(Boolean).join(', ')}\r\nEND:VEVENT\r\nEND:VCALENDAR`;
   const blob=new Blob([ics],{type:'text/calendar'});const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);a.download=`meeting_${m.date}_${(m.institution||'meeting').replace(/[^a-z0-9]/gi,'_')}.ics`;
   a.click();showToast('✅ .ics file downloaded!','success');}
@@ -1405,11 +1467,30 @@ function exportMeetingsExcel(){const meets=getMeetings();if(!meets.length){showT
   XLSX.writeFile(wb,`Meetings_Report_${todayStr()}.xlsx`);showToast('✅ Excel downloaded!','success');}
 
 // MEETING REMINDER
-function scheduleMeetingReminder(m){if(!m.date||!m.institution)return;
-  const meetDate=new Date(m.date+'T08:00:00');const now=new Date();
-  const diff=meetDate-now;if(diff>0&&diff<48*3600*1000){
-    setTimeout(()=>{if(Notification.permission==='granted'){new Notification('📅 Meeting Today — The Mind Palace',{body:`${m.institution}: ${m.keyAgenda?.slice(0,80)||'No agenda'}`});}
-      showToast(`📅 Meeting today: ${m.institution}`,'reminder');},diff);}}
+function scheduleMeetingReminder(m){
+  if(!m.date||!m.status||m.status!=='scheduled')return;
+  const timeStr=m.time||'09:00';
+  const meetDT=new Date(m.date+'T'+timeStr+':00');
+  const now=new Date();
+  const WINDOW=72*3600*1000; // schedule reminders up to 72h ahead
+  const reminders=[
+    {diff:60*60*1000,  label:'1 hour'},
+    {diff:30*60*1000,  label:'30 minutes'}
+  ];
+  reminders.forEach(({diff,label})=>{
+    const fireAt=meetDT-diff;
+    const msUntil=fireAt-now;
+    if(msUntil>0&&msUntil<WINDOW){
+      setTimeout(()=>{
+        const body=`${m.institution}${m.keyAgenda?' — '+m.keyAgenda.slice(0,60):''}`;
+        if(Notification.permission==='granted'){
+          new Notification(`⏰ Meeting in ${label} — Mind Palace`,{body,icon:'./icon.svg'});
+        }
+        showToast(`⏰ Meeting in ${label}: ${m.institution}`,'reminder');
+      },msUntil);
+    }
+  });
+}
 
 // ═══════════════════════════════════════════════════════════
 // SETTINGS
@@ -1420,7 +1501,8 @@ function renderSettings(){const s=getSettings();
   document.getElementById('s-sup-key').value=s.supabaseKey||'';
   document.getElementById('s-sync-key').value=s.syncKey||'';
   document.getElementById('s-fy-start').value=s.fyStart||1;
-  document.getElementById('s-fy-year').value=s.fyYear||new Date().getFullYear();}
+  document.getElementById('s-fy-year').value=s.fyYear||new Date().getFullYear();
+  renderSettingsTopics();}
 
 function toggleKey(id){const el=document.getElementById(id);el.type=el.type==='password'?'text':'password';}
 function saveApiKey(){const s=getSettings();s.apiKey=document.getElementById('s-api').value.trim();save(K.settings,s);showToast('✅ API key saved!','success');}
@@ -1430,7 +1512,7 @@ function saveSupabase(){const s=getSettings();
   s.supabaseKey=document.getElementById('s-sup-key').value.trim();
   s.syncKey=document.getElementById('s-sync-key').value.trim();
   save(K.settings,s);showToast('✅ Supabase configured! Pulling data…','success');
-  pullAll().then(ok=>{document.getElementById('sync-status-text').textContent=ok?'✅ Connected':'❌ Check credentials';setSyncDot(ok);});}
+  pullAll().then(r=>{const el=document.getElementById('sync-status-text');if(r.ok){el.textContent='✅ Connected';el.style.color='var(--green)';}else{el.textContent=r.err;el.style.color='var(--red)';}setSyncDot(r.ok);});}
 
 function saveFY(){const s=getSettings();
   s.fyStart=parseInt(document.getElementById('s-fy-start').value);
@@ -1492,13 +1574,263 @@ if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.s
 // ═══════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════
+// INTELLIGENCE FEED (NEWS PANEL)
+// ═══════════════════════════════════════════════════════════
+
+const TOPIC_COLORS = ['#6366f1','#10b981','#f59e0b','#ef4444','#3b82f6','#8b5cf6','#06b6d4','#f97316'];
+const DEFAULT_TOPICS = ['Skill Development India','EdTech','AI in Education'];
+const NEWS_TTL = 8 * 3600 * 1000; // refresh every 8 hours
+
+function getNews(){return load(K.news)||{topics:[...DEFAULT_TOPICS],activeTopic:null,cache:{}};}
+function saveNews(n){save(K.news,n);}
+
+function getTopicColor(topic){
+  const topics=getNews().topics;
+  return TOPIC_COLORS[topics.indexOf(topic)%TOPIC_COLORS.length]||'#6366f1';
+}
+
+function getTopicEmoji(topic){
+  const t=topic.toLowerCase();
+  if(t.includes('ai')||t.includes('tech'))return'🤖';
+  if(t.includes('skill')||t.includes('develop'))return'🎓';
+  if(t.includes('health')||t.includes('medic'))return'⚕️';
+  if(t.includes('climate')||t.includes('environment'))return'🌿';
+  if(t.includes('finance')||t.includes('economy'))return'📈';
+  if(t.includes('research')||t.includes('science'))return'🔬';
+  if(t.includes('policy')||t.includes('govern'))return'🏛️';
+  if(t.includes('india')||t.includes('india'))return'🇮🇳';
+  if(t.includes('startup')||t.includes('entrepreneur'))return'🚀';
+  return'📰';
+}
+
+// Agentic loop: Claude + web_search tool
+async function callClaudeWebSearch(prompt){
+  const s=getSettings();
+  if(!s.apiKey)throw new Error('No API key — add one in Settings');
+  const headers={'Content-Type':'application/json','x-api-key':s.apiKey,
+    'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'};
+  let messages=[{role:'user',content:prompt}];
+  for(let i=0;i<8;i++){
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers,
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:3000,
+        tools:[{type:'web_search_20250305',name:'web_search'}],messages})});
+    const data=await resp.json();
+    if(data.error)throw new Error(data.error.message);
+    if(data.stop_reason==='end_turn'){
+      return data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+    }
+    if(data.stop_reason==='tool_use'){
+      messages.push({role:'assistant',content:data.content});
+      const results=data.content.filter(b=>b.type==='tool_use')
+        .map(b=>({type:'tool_result',tool_use_id:b.id,content:''}));
+      messages.push({role:'user',content:results});
+    }else break;
+  }
+  return '';
+}
+
+async function fetchNewsForTopic(topic){
+  const text=await callClaudeWebSearch(
+    `Search the web right now for the 6 most recent and important news articles, developments, or research papers published about: "${topic}".
+
+Focus on articles from the last 2 weeks if possible. Include a mix of news and research.
+
+Return ONLY a valid JSON array. No other text, no markdown, no explanation. Each object must have:
+- "title": the article headline (string)
+- "url": direct URL to the article (string, must start with https://)
+- "source": publication name (string)
+- "date": publication date in YYYY-MM-DD format (string)
+- "summary": 2-3 sentence informative summary of the key findings or news (string)
+
+Example: [{"title":"...","url":"https://...","source":"...","date":"2026-05-20","summary":"..."}]`
+  );
+  try{
+    const match=text.match(/\[[\s\S]*?\]/);
+    if(match)return JSON.parse(match[0]);
+    // try to parse entire response as JSON
+    return JSON.parse(text.trim());
+  }catch(e){
+    console.warn('News parse error for',topic,e,text.slice(0,200));
+    return[];
+  }
+}
+
+async function refreshNews(manual=false){
+  const n=getNews();
+  if(!n.topics.length){
+    document.getElementById('news-content').innerHTML='<div class="es"><h4>No topics set</h4><p>Click "+ Topic" to add subjects you want to follow</p></div>';
+    return;
+  }
+  const activeTopic=n.activeTopic||n.topics[0];
+  const cached=n.cache[activeTopic];
+  const stale=!cached||Date.now()-cached.fetchedAt>NEWS_TTL;
+  if(!stale&&!manual){renderNewsContent(activeTopic);return;}
+  // Show loading state
+  const btn=document.getElementById('news-refresh-btn');
+  if(btn){btn.textContent='⏳ Fetching…';btn.disabled=true;}
+  document.getElementById('news-content').innerHTML=`<div style="text-align:center;padding:32px;"><div class="spin" style="margin:0 auto 12px;"></div><div style="font-size:12px;color:var(--t3);">✦ Searching the web for latest news on <strong style="color:var(--text);">${esc(activeTopic)}</strong>…</div></div>`;
+  try{
+    const articles=await fetchNewsForTopic(activeTopic);
+    const fresh=getNews();
+    fresh.cache[activeTopic]={fetchedAt:Date.now(),articles};
+    saveNews(fresh);
+    renderNewsContent(activeTopic);
+    if(manual)showToast('✅ News updated!','success');
+  }catch(e){
+    document.getElementById('news-content').innerHTML=`<div class="es"><h4>Couldn't fetch news</h4><p style="color:var(--red);">${esc(e.message)}</p><p style="margin-top:6px;">Check your API key in Settings and try again.</p></div>`;
+    if(manual)showToast('❌ '+e.message,'error');
+  }finally{
+    if(btn){btn.textContent='🔄 Refresh';btn.disabled=false;}
+  }
+}
+
+function renderNewsContent(topic){
+  const n=getNews();const cached=n.cache[topic];
+  if(!cached||!cached.articles.length){
+    document.getElementById('news-content').innerHTML=`<div class="es"><h4>No articles found</h4><p>Try a different topic or click Refresh.</p></div>`;
+    return;
+  }
+  const arts=cached.articles;const color=getTopicColor(topic);const emoji=getTopicEmoji(topic);
+  const ts=new Date(cached.fetchedAt).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+  const lu=document.getElementById('news-last-updated');
+  if(lu)lu.textContent=`Last updated ${ts}`;
+  const top3=arts.slice(0,3);const rest=arts.slice(3);
+  const cards=top3.map((a,i)=>`
+    <div class="news-card">
+      <div class="news-card-thumb" style="background:linear-gradient(135deg,${color}22,${color}44);">
+        <span>${emoji}</span>
+      </div>
+      <div class="news-card-body">
+        <div class="news-card-title">${esc(a.title||'')}</div>
+        <div class="news-card-meta">${esc(a.source||'')} · ${esc(a.date||'')}</div>
+        <div class="news-card-summary">${esc(a.summary||'')}</div>
+        <div class="news-card-footer">
+          <a href="${esc(a.url||'#')}" target="_blank" rel="noopener" class="btn bg bsm" style="flex:1;text-align:center;text-decoration:none;">↗ Read</a>
+        </div>
+      </div>
+    </div>`).join('');
+  const list=rest.map((a,i)=>{const li=i+3;return`
+    <div class="news-list-item">
+      <div class="news-list-dot" style="background:${color};"></div>
+      <div class="news-list-body">
+        <div class="news-list-title">${esc(a.title||'')}</div>
+        <div class="news-list-meta">${esc(a.source||'')} · ${esc(a.date||'')}</div>
+        <div class="news-list-summary" id="ns-${li}">${esc(a.summary||'')}</div>
+        <div class="row" style="gap:5px;margin-top:5px;">
+          <button class="btn bg bsm" onclick="toggleNewsSum('ns-${li}',this)">Summary ▾</button>
+          <a href="${esc(a.url||'#')}" target="_blank" rel="noopener" class="btn bg bsm" style="text-decoration:none;">↗ Read</a>
+        </div>
+      </div>
+    </div>`}).join('');
+  document.getElementById('news-content').innerHTML=`
+    <div class="news-cards">${cards}</div>
+    ${rest.length?`<div style="margin-top:2px;">${list}</div>`:''}`;
+}
+
+function toggleNewsSum(id,btn){
+  const el=document.getElementById(id);if(!el)return;
+  el.classList.toggle('open');
+  btn.textContent=el.classList.contains('open')?'Summary ▴':'Summary ▾';
+}
+
+function renderNewsPanelTopicChips(){
+  const n=getNews();const active=n.activeTopic||n.topics[0]||'';
+  const el=document.getElementById('news-topic-chips');if(!el)return;
+  el.innerHTML=n.topics.map(t=>`
+    <span class="topic-chip ${t===active?'active':'inactive'}" onclick="switchNewsTopic('${esc(t)}')">
+      ${getTopicEmoji(t)} ${esc(t)}
+      <span onclick="event.stopPropagation();removeTopic('${esc(t)}')" style="margin-left:2px;opacity:.5;font-size:10px;cursor:pointer;">✕</span>
+    </span>`).join('');
+}
+
+function switchNewsTopic(topic){
+  const n=getNews();n.activeTopic=topic;saveNews(n);
+  renderNewsPanelTopicChips();
+  const cached=n.cache[topic];
+  if(cached&&Date.now()-cached.fetchedAt<NEWS_TTL){renderNewsContent(topic);}
+  else{refreshNews(false);}
+}
+
+function openAddTopicModal(){
+  showModal('Add News Topic',`
+    <div class="field"><label>Topic</label>
+      <input type="text" id="m-nt-t" placeholder="e.g. EdTech, AI in Healthcare, Skill Development India…">
+    </div>
+    <div style="margin:6px 0 12px;"><div class="ct" style="margin-bottom:8px;">Quick add</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;">
+        ${['EdTech','Skill Development India','AI in Education','Higher Education Policy',
+           'Startup Ecosystem India','Future of Work','Digital India','NEP 2020']
+          .map(t=>`<span class="topic-chip inactive" onclick="document.getElementById('m-nt-t').value='${t}'">${t}</span>`).join('')}
+      </div>
+    </div>
+    <div class="row" style="gap:8px;justify-content:flex-end;margin-top:14px;">
+      <button class="btn bg" onclick="closeModal()">Cancel</button>
+      <button class="btn bp" onclick="addTopicFromModal()">Add Topic</button>
+    </div>`);
+  setTimeout(()=>document.getElementById('m-nt-t')?.focus(),100);
+}
+
+function addTopicFromModal(){
+  const t=document.getElementById('m-nt-t')?.value?.trim();
+  if(!t){showToast('Enter a topic','error');return;}
+  addTopic(t);closeModal();showToast('✅ Topic added! Fetching news…','success');
+  switchNewsTopic(t);
+}
+
+function addTopic(topic){
+  const n=getNews();if(n.topics.includes(topic))return;
+  n.topics.push(topic);saveNews(n);
+  renderNewsPanelTopicChips();renderSettingsTopics();
+}
+
+function removeTopic(topic){
+  const n=getNews();n.topics=n.topics.filter(t=>t!==topic);
+  if(n.activeTopic===topic)n.activeTopic=n.topics[0]||null;
+  delete n.cache[topic];saveNews(n);
+  renderNewsPanelTopicChips();renderSettingsTopics();
+  if(n.activeTopic){switchNewsTopic(n.activeTopic);}
+  else{document.getElementById('news-content').innerHTML='<div class="es"><h4>No topics</h4><p>Click "+ Topic" to add one</p></div>';}
+}
+
+function saveTopicFromSettings(){
+  const inp=document.getElementById('s-new-topic');if(!inp)return;
+  const t=inp.value.trim();if(!t)return;
+  addTopic(t);inp.value='';
+  showToast('✅ Topic added!','success');
+  if(!getNews().activeTopic)switchNewsTopic(t);
+}
+
+function renderSettingsTopics(){
+  const el=document.getElementById('settings-topics');if(!el)return;
+  const n=getNews();
+  el.innerHTML=n.topics.length?n.topics.map(t=>`
+    <span class="topic-chip active" style="background:${getTopicColor(t)}22;color:${getTopicColor(t)};border-color:${getTopicColor(t)}55;">
+      ${getTopicEmoji(t)} ${esc(t)}
+      <span onclick="removeTopic('${esc(t)}')" style="cursor:pointer;opacity:.6;font-size:10px;margin-left:2px;">✕</span>
+    </span>`).join('')
+    :'<span style="font-size:12px;color:var(--t4);">No topics yet — add one below</span>';
+}
+
+async function initNewsPanel(){
+  renderNewsPanelTopicChips();
+  const n=getNews();
+  const topic=n.activeTopic||n.topics[0];
+  if(!topic)return;
+  if(!n.activeTopic){n.activeTopic=topic;saveNews(n);}
+  await refreshNews(false);
+}
+
 (function init(){
   document.getElementById('sidebar-date').textContent=new Date().toLocaleDateString('en-IN',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
   if(!getQuarterly().quarters.length)generateQuarters();
   // Pull from Supabase on load
   const s=getSettings();
-  if(s.supabaseUrl&&s.supabaseKey&&s.syncKey)pullAll().then(ok=>setSyncDot(ok));
+  if(s.supabaseUrl&&s.supabaseKey&&s.syncKey)pullAll().then(r=>setSyncDot(r.ok));
   startReminders();checkNudges();checkMeetingReminders();navigate('dashboard');
+  // Init news panel after short delay so dashboard renders first
+  setTimeout(initNewsPanel, 300);
 })();
 </script>
 </body>

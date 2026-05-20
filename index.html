@@ -1111,7 +1111,7 @@ async function generateDailyGoals(){const s=getSettings();
   document.getElementById('daily-container').innerHTML=`<div class="card" style="text-align:center;padding:36px;"><div class="spin" style="margin:0 auto 12px;"></div><div style="color:var(--t3);font-size:12px;">✦ Generating your daily goals…</div></div>`;
   try{const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':s.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,messages:[{role:'user',content:
+      body:JSON.stringify({model:'claude-sonnet-4-5-20250929',max_tokens:500,messages:[{role:'user',content:
         `Generate 4-6 specific actionable daily goals for ${d}.\nVision: ${annual.vision||'—'}\nTheme: ${annual.theme||'—'}\nQuarterly Goals:\n${curQ.goals.map(g=>`- ${g.title}: ${g.current||0}/${g.target||'?'} ${g.unit||''} (${g.status})`).join('\n')}\nReturn ONLY a JSON array of strings.`}]})});
     const data=await resp.json();if(data.error)throw new Error(data.error.message);
     const goals=JSON.parse(data.content[0].text.trim().replace(/```json|```/g,'').trim());
@@ -1293,7 +1293,7 @@ async function genInsights(convId){const s=getSettings();if(!s.apiKey){showToast
   const linked=convs.filter(x=>(c.linkedConvIds||[]).includes(x.id));showToast('✦ Generating…','success');
   try{const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':s.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:
+      body:JSON.stringify({model:'claude-sonnet-4-5-20250929',max_tokens:600,messages:[{role:'user',content:
         `Analyze: "${c.title}" (${c.date}, ${c.type})\nParticipants: ${(c.participants||[]).join(', ')}\nNotes:\n${c.notes}\n${linked.length?'Related:\n'+linked.map(lc=>`- "${lc.title}": ${(lc.notes||'').slice(0,150)}`).join('\n'):''}\nProvide: key themes, decisions, connections, follow-ups, risks. Plain text only.`}]})});
     const data=await resp.json();if(data.error)throw new Error(data.error.message);
     c.insights=data.content[0].text.trim();save(K.convs,convs);SUPA.push('conversations',convId,c);viewConv(convId);showToast('✅ Insights ready!','success');
@@ -1959,22 +1959,51 @@ function getTopicEmoji(topic){
   return'📰';
 }
 
-// Simple, reliable Claude API call — no tools
+// Claude models in priority order (most capable first, all confirmed active)
+const CLAUDE_MODELS=[
+  'claude-sonnet-4-5-20250929',  // Claude Sonnet 4.5 — Sept 2025
+  'claude-haiku-4-5-20251001',   // Claude Haiku 4.5 — Oct 2025 (fast fallback)
+];
+
+// Simple, reliable Claude API call with automatic model fallback
 async function callClaude(prompt, maxTokens){
   const s=getSettings();
   if(!s.apiKey)throw new Error('No API key — go to Settings → AI and paste your key from console.anthropic.com');
-  const resp=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':s.apiKey,
-      'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',
-      max_tokens:maxTokens||1500,
-      messages:[{role:'user',content:prompt}]})
-  });
-  const data=await resp.json();
-  if(data.error)throw new Error(data.error.message+' (check API key in Settings)');
-  if(!data.content?.[0]?.text)throw new Error('Empty response — try again');
-  return data.content[0].text;
+  
+  const headers={
+    'Content-Type':'application/json',
+    'x-api-key':s.apiKey,
+    'anthropic-version':'2023-06-01',
+    'anthropic-dangerous-direct-browser-access':'true'
+  };
+  
+  let lastError='';
+  for(const model of CLAUDE_MODELS){
+    try{
+      const resp=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',headers,
+        body:JSON.stringify({model,max_tokens:maxTokens||1500,
+          messages:[{role:'user',content:prompt}]})
+      });
+      const data=await resp.json();
+      // Skip to next model if this one is not found/deprecated
+      if(data.error){
+        const msg=data.error.message||'';
+        if(msg.includes('model')||data.error.type==='not_found_error'){
+          lastError=msg;continue;
+        }
+        throw new Error(msg);
+      }
+      if(!data.content?.[0]?.text)throw new Error('Empty response — try again');
+      return data.content[0].text;
+    }catch(e){
+      if(e.message.includes('model')||e.message.includes('not found')){
+        lastError=e.message;continue;
+      }
+      throw e;
+    }
+  }
+  throw new Error('No working model found. Last error: '+lastError+'. Check your API key in Settings.');
 }
 
 async function fetchNewsForTopic(topic){

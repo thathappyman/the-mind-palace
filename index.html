@@ -677,6 +677,8 @@ input:focus,textarea:focus,select:focus{box-shadow:0 0 0 3px rgba(99,102,241,.15
       <p style="font-size:10px;color:var(--t4);margin-top:5px;">Get free key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent);">console.anthropic.com</a></p>
     </div>
     <button class="btn bp bsm" onclick="saveApiKey()">Save Key</button>
+    <button class="btn bg bsm" onclick="testAPIKey()">🔍 Test Key</button>
+    <div id="api-test-result" style="font-size:11.5px;margin-top:8px;"></div>
   </div>
   <div class="card">
     <div class="ct">Cloud Sync — Supabase</div>
@@ -1957,57 +1959,53 @@ function getTopicEmoji(topic){
   return'📰';
 }
 
-// Agentic loop: Claude + web_search tool
-async function callClaudeWebSearch(prompt){
+// Simple, reliable Claude API call — no tools
+async function callClaude(prompt, maxTokens){
   const s=getSettings();
-  if(!s.apiKey)throw new Error('No API key — add one in Settings');
-  const headers={'Content-Type':'application/json','x-api-key':s.apiKey,
-    'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'};
-  let messages=[{role:'user',content:prompt}];
-  for(let i=0;i<8;i++){
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers,
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:3000,
-        tools:[{type:'web_search_20250305',name:'web_search'}],messages})});
-    const data=await resp.json();
-    if(data.error)throw new Error(data.error.message);
-    if(data.stop_reason==='end_turn'){
-      return data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
-    }
-    if(data.stop_reason==='tool_use'){
-      messages.push({role:'assistant',content:data.content});
-      const results=data.content.filter(b=>b.type==='tool_use')
-        .map(b=>({type:'tool_result',tool_use_id:b.id,content:''}));
-      messages.push({role:'user',content:results});
-    }else break;
-  }
-  return '';
+  if(!s.apiKey)throw new Error('No API key — go to Settings → AI and paste your key from console.anthropic.com');
+  const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':s.apiKey,
+      'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',
+      max_tokens:maxTokens||1500,
+      messages:[{role:'user',content:prompt}]})
+  });
+  const data=await resp.json();
+  if(data.error)throw new Error(data.error.message+' (check API key in Settings)');
+  if(!data.content?.[0]?.text)throw new Error('Empty response — try again');
+  return data.content[0].text;
 }
 
 async function fetchNewsForTopic(topic){
-  const text=await callClaudeWebSearch(
-    `Search the web right now for the 6 most recent and important news articles, developments, or research papers published about: "${topic}".
+  // Step 1: Pull real current headlines from Google News RSS for context
+  const gNewsUrl='https://news.google.com/rss/search?q='+encodeURIComponent(topic+' India')+'&hl=en-IN&gl=IN&ceid=IN:en';
+  let rssHeadlines=[];
+  try{const items=await fetchRSSWithProxy(gNewsUrl);rssHeadlines=items.slice(0,8);}
+  catch(e){console.warn('[IntelFeed] RSS context failed:',e.message);}
 
-Focus on articles from the last 2 weeks if possible. Include a mix of news and research.
+  // Step 2: Claude summarises headlines (with RSS context) or uses own knowledge
+  let prompt;
+  if(rssHeadlines.length>=3){
+    const lines=rssHeadlines.map((it,i)=>
+      (i+1)+'. Title: '+it.title+'\n   URL: '+it.url+'\n   Source: '+(it.source||'News')+'\n   Date: '+(it.date||'recent')
+    ).join('\n');
+    prompt='Here are recent news headlines about "'+topic+'". Write a clear 2-sentence summary for each.\n\nHeadlines:\n'+lines+'\n\nReturn ONLY a valid JSON array with the exact titles and URLs provided. Each object: {title,url,source,date,summary}. No other text.';
+  }else{
+    prompt='List 6 important recent developments about "'+topic+'" (India focus where relevant).\nReturn ONLY a JSON array: [{title,url,source,date,summary}]. Use real publication names. No markdown.';
+  }
 
-Return ONLY a valid JSON array. No other text, no markdown, no explanation. Each object must have:
-- "title": the article headline (string)
-- "url": direct URL to the article (string, must start with https://)
-- "source": publication name (string)
-- "date": publication date in YYYY-MM-DD format (string)
-- "summary": 2-3 sentence informative summary of the key findings or news (string)
-
-Example: [{"title":"...","url":"https://...","source":"...","date":"2026-05-20","summary":"..."}]`
-  );
+  const text=await callClaude(prompt,2000);
   try{
-    const match=text.match(/\[[\s\S]*?\]/);
-    if(match)return JSON.parse(match[0]);
-    // try to parse entire response as JSON
+    const m=text.match(/\[[\s\S]*\]/);
+    if(m)return JSON.parse(m[0]);
     return JSON.parse(text.trim());
   }catch(e){
-    console.warn('News parse error for',topic,e,text.slice(0,200));
+    console.warn('[IntelFeed] Parse error:',e.message,text.slice(0,100));
     return[];
   }
 }
+
 
 async function refreshNews(manual=false){
   const n=getNews();
@@ -2209,102 +2207,142 @@ function restoreSidebarState(){
 // RSS FEED PANEL
 // ═══════════════════════════════════════════════════════════
 const RSS_TTL=4*3600*1000;
-const RSS_PROXY='https://api.rss2json.com/v1/api.json?rss_url=';
+// ═══════════════════════════════════════════════════════════
+// RSS FEED ENGINE — proxy-first, Claude fallback
+// ═══════════════════════════════════════════════════════════
 
-// Topic → RSS source mapping (auto-mapped)
-const RSS_TOPIC_PATTERNS=[
-  {keywords:['edtech','education technology','e-learning','elearning','online learning'],
-   feeds:[
-    {name:'Google News',url:'https://news.google.com/rss/search?q=EdTech+education+India&hl=en-IN&gl=IN&ceid=IN:en'},
-    {name:'YourStory',url:'https://yourstory.com/topic/edtech/feed'},
-    {name:'TechCrunch',url:'https://techcrunch.com/tag/edtech/feed/'},
-  ]},
-  {keywords:['skill development','vocational','nsdc','msde','skilling'],
-   feeds:[
-    {name:'Google News',url:'https://news.google.com/rss/search?q=skill+development+India+NSDC&hl=en-IN&gl=IN&ceid=IN:en'},
-    {name:'PIB India',url:'https://pib.gov.in/RssMain.aspx?ModId=6&Lang=1&Regid=3'},
-    {name:'Economic Times',url:'https://economictimes.indiatimes.com/rssfeeds/1977021501.cms'},
-  ]},
-  {keywords:['ai','artificial intelligence','machine learning','generative ai','llm'],
-   feeds:[
-    {name:'Google News AI',url:'https://news.google.com/rss/search?q=artificial+intelligence+India&hl=en-IN&gl=IN&ceid=IN:en'},
-    {name:'MIT Tech Review',url:'https://www.technologyreview.com/feed/'},
-    {name:'VentureBeat AI',url:'https://venturebeat.com/ai/feed/'},
-  ]},
-  {keywords:['higher education','university','college','nep','ugc','aicte','nep 2020'],
-   feeds:[
-    {name:'Google News',url:'https://news.google.com/rss/search?q=higher+education+India+UGC+AICTE&hl=en-IN&gl=IN&ceid=IN:en'},
-    {name:'The Hindu Edu',url:'https://www.thehindu.com/education/?service=rss'},
-    {name:'PIB India',url:'https://pib.gov.in/RssMain.aspx?ModId=6&Lang=1&Regid=3'},
-  ]},
-  {keywords:['startup','entrepreneur','venture capital','funding','seed'],
-   feeds:[
-    {name:'YourStory',url:'https://yourstory.com/feed'},
-    {name:'Inc42',url:'https://inc42.com/feed/'},
-    {name:'TechCrunch',url:'https://techcrunch.com/feed/'},
-  ]},
-  {keywords:['digital india','government','policy','ministry','budget','scheme'],
-   feeds:[
-    {name:'PIB India',url:'https://pib.gov.in/RssMain.aspx?ModId=6&Lang=1&Regid=3'},
-    {name:'Google News',url:'https://news.google.com/rss/search?q=Digital+India+government+policy&hl=en-IN&gl=IN&ceid=IN:en'},
-    {name:'The Hindu',url:'https://www.thehindu.com/news/national/?service=rss'},
-  ]},
-  {keywords:['health','medical','healthcare','pharma'],
-   feeds:[
-    {name:'Google News',url:'https://news.google.com/rss/search?q=healthcare+India&hl=en-IN&gl=IN&ceid=IN:en'},
-    {name:'NDTV Health',url:'https://www.ndtv.com/rss/health'},
-  ]},
-  {keywords:['climate','environment','sustainability','renewable','solar'],
-   feeds:[
-    {name:'Google News',url:'https://news.google.com/rss/search?q=climate+environment+India&hl=en-IN&gl=IN&ceid=IN:en'},
-    {name:'Down to Earth',url:'https://www.downtoearth.org.in/rss'},
-  ]},
-];
+// Browser-compatible fetch timeout (no AbortSignal.timeout needed)
+function rssTimeout(ms){
+  const c=new AbortController();
+  const t=setTimeout(()=>c.abort(),ms);
+  return{signal:c.signal,clear:()=>clearTimeout(t)};
+}
 
-function getRSSFeedsForTopic(topic){
-  const tl=(topic||'').toLowerCase();
-  for(const p of RSS_TOPIC_PATTERNS){
-    if(p.keywords.some(k=>tl.includes(k)))return p.feeds;
+// Parse raw RSS/Atom XML string → array of article objects
+function parseRSSXML(xmlStr){
+  try{
+    const doc=new DOMParser().parseFromString(xmlStr,'text/xml');
+    if(doc.querySelector('parsererror'))return[];
+    const feedTitle=doc.querySelector('channel > title, feed > title')?.textContent||'RSS';
+    const items=doc.querySelectorAll('item, entry');
+    return Array.from(items).slice(0,9).map(item=>{
+      const title=stripHtml(item.querySelector('title')?.textContent||'').trim();
+      // Handle RSS 2.0 and Atom link formats
+      const linkEl=item.querySelector('link');
+      let url=(linkEl?.getAttribute('href')||linkEl?.textContent||'').trim();
+      if(!url||url.length<8)url=(item.querySelector('guid')?.textContent||'').trim();
+      // Google News source tag gives actual publisher name
+      const src=item.querySelector('source')?.textContent||feedTitle;
+      const pub=item.querySelector('pubDate,published,updated')?.textContent||'';
+      let date='';
+      try{if(pub)date=new Date(pub).toISOString().slice(0,10);}catch(e){}
+      const desc=stripHtml(
+        item.querySelector('description,summary')?.textContent||
+        item.querySelector('content')?.textContent||''
+      );
+      const thumb=item.querySelector('enclosure[type^="image"]')?.getAttribute('url')||null;
+      return{title,url,source:src,date,thumbnail:thumb,summary:desc.slice(0,220)};
+    }).filter(it=>it.title.length>3&&it.url.length>8);
+  }catch(e){return[];}
+}
+
+// Three-proxy chain — first success wins
+async function fetchRSSWithProxy(feedUrl){
+  const enc=encodeURIComponent(feedUrl);
+  const strategies=[
+    // 1. corsproxy.io — returns raw XML
+    async()=>{
+      const {signal,clear}=rssTimeout(5000);
+      try{
+        const r=await fetch('https://corsproxy.io/?'+enc,{signal});
+        clear();
+        if(!r.ok)throw new Error('HTTP '+r.status);
+        return parseRSSXML(await r.text());
+      }finally{clear();}
+    },
+    // 2. allorigins raw — returns raw content
+    async()=>{
+      const {signal,clear}=rssTimeout(6000);
+      try{
+        const r=await fetch('https://api.allorigins.win/raw?url='+enc,{signal});
+        clear();
+        if(!r.ok)throw new Error('HTTP '+r.status);
+        return parseRSSXML(await r.text());
+      }finally{clear();}
+    },
+    // 3. rss2json — returns pre-parsed JSON
+    async()=>{
+      const {signal,clear}=rssTimeout(6000);
+      try{
+        const r=await fetch('https://api.rss2json.com/v1/api.json?rss_url='+enc+'&count=9',{signal});
+        clear();
+        if(!r.ok)throw new Error('HTTP '+r.status);
+        const d=await r.json();
+        if(d.status!=='ok')throw new Error(d.message||'rss2json error');
+        return(d.items||[]).map(it=>({
+          title:stripHtml(it.title||''),url:it.link||'#',
+          source:d.feed?.title||'RSS',date:(it.pubDate||'').slice(0,10),
+          thumbnail:it.thumbnail||it.enclosure?.link||null,
+          summary:stripHtml(it.description||it.content||'').slice(0,220)
+        }));
+      }finally{clear();}
+    },
+  ];
+  for(const s of strategies){
+    try{const items=await s();if(items.length>0)return items;}
+    catch(e){console.warn('[RSS proxy]',e.message);}
   }
-  // Default: Google News in India context for any topic
-  return[{
-    name:'Google News',
-    url:`https://news.google.com/rss/search?q=${encodeURIComponent(topic)}&hl=en-IN&gl=IN&ceid=IN:en`
-  }];
+  throw new Error('All proxies failed');
 }
 
-function stripHtml(s){return(s||'').replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim();}
+// Claude-powered fallback — always works when API key is set
+async function fetchNewsViaClaudeRSS(topic){
+  const prompt=`List 9 recent news items about "${topic}" from real news sources (India focus where relevant).
 
-async function fetchOneFeed(feedUrl,count){
-  const url=RSS_PROXY+encodeURIComponent(feedUrl)+'&count='+(count||8);
-  const r=await fetch(url,{signal:AbortSignal.timeout(8000)});
-  if(!r.ok)throw new Error('HTTP '+r.status);
-  const d=await r.json();
-  if(d.status!=='ok')throw new Error(d.message||'Feed error');
-  return(d.items||[]).map(it=>({
-    title:stripHtml(it.title||''),
-    url:it.link||'#',
-    source:d.feed?.title||'RSS',
-    date:(it.pubDate||'').slice(0,10),
-    thumbnail:it.thumbnail||it.enclosure?.link||null,
-    summary:stripHtml(it.description||it.content||'').slice(0,220),
-  }));
+Return ONLY a JSON array — no markdown, no explanation. Each object must have:
+- title: a specific real headline (string)
+- url: a real URL to the article or publisher homepage (string, must start https://)  
+- source: the publication name, e.g. "The Hindu", "NDTV", "Economic Times" (string)
+- date: approximate date in YYYY-MM-DD format (string)
+- summary: one clear sentence explaining what happened (string)
+
+Include variety: government news, industry news, research, and opinion. Be specific — avoid generic placeholders.`;
+  const text=await callClaude(prompt,2000);
+  const m=text.match(/\[[\s\S]*\]/);
+  if(!m)throw new Error('No JSON in response');
+  const items=JSON.parse(m[0]);
+  return items.map(it=>({...it,aiGenerated:true}));
 }
 
+// Main RSS fetch — proxies first, Claude if proxies fail
 async function fetchRSSForTopic(topic){
   const feeds=getRSSFeedsForTopic(topic);
   let all=[];const seen=new Set();
-  for(const feed of feeds.slice(0,3)){
+
+  // Attempt real RSS proxies
+  for(const feed of feeds.slice(0,2)){
     try{
-      const items=await fetchOneFeed(feed.url,8);
-      items.forEach(it=>{if(it.url&&!seen.has(it.url)){seen.add(it.url);all.push({...it,feedName:feed.name});}});
-    }catch(e){console.warn('[RSS] Failed:',feed.name,e.message);}
+      const items=await fetchRSSWithProxy(feed.url);
+      items.forEach(it=>{
+        if(it.url&&!seen.has(it.url)){seen.add(it.url);all.push({...it,feedName:feed.name});}
+      });
+      if(all.length>=6)break;
+    }catch(e){console.warn('[RSS]',feed.name,':',e.message);}
   }
+
+  // Claude fallback if proxies gave < 3 articles
+  if(all.length<3){
+    try{
+      const ai=await fetchNewsViaClaudeRSS(topic);
+      ai.forEach(it=>{
+        if(!seen.has(it.url)){seen.add(it.url);all.push({...it,feedName:'AI Feed'});}
+      });
+    }catch(e){console.warn('[RSS AI fallback]',e.message);}
+  }
+
   return all.slice(0,9);
 }
 
-function getRSSData(){return load(K.rss)||{cache:{}};}
-function saveRSSData(d){save(K.rss,d);}
 
 async function refreshRSSPanel(manual){
   const n=getNews();
@@ -2354,6 +2392,7 @@ function renderRSSContent(topic,articles){
   }
   const color=getTopicColor(topic);const emoji=getTopicEmoji(topic);
   const top3=articles.slice(0,3);const rest=articles.slice(3);
+  const aiMode=articles.every(a=>a.aiGenerated);
   const cards=top3.map(a=>`
     <div class="news-card">
       <div class="news-card-thumb" style="background:linear-gradient(135deg,${color}18,${color}35);position:relative;">
@@ -2362,7 +2401,7 @@ function renderRSSContent(topic,articles){
       </div>
       <div class="news-card-body">
         <div class="news-card-title">${esc(a.title)}</div>
-        <div class="news-card-meta">${esc(a.feedName||a.source)} · ${esc(a.date)}</div>
+        <div class="news-card-meta">${esc(a.feedName||a.source)} · ${esc(a.date)}${a.aiGenerated?' · <span style="color:var(--accent);font-size:9px;">✦ AI</span>':''}</div>
         <div class="news-card-summary">${esc(a.summary)}</div>
         <div class="news-card-footer">
           <a href="${esc(a.url)}" target="_blank" rel="noopener" class="btn bg bsm" style="flex:1;text-align:center;text-decoration:none;">↗ Read</a>
@@ -2383,6 +2422,17 @@ function renderRSSContent(topic,articles){
       </div>
     </div>`).join('');
   document.getElementById('rss-content').innerHTML=`<div class="news-cards">${cards}</div>${rest.length?`<div>${list}</div>`:''}`;
+}
+
+
+function testAPIKey(){
+  const res=document.getElementById('api-test-result');
+  if(res)res.innerHTML='<span style="color:var(--t4);">Testing…</span>';
+  const s=getSettings();
+  if(!s.apiKey){if(res)res.innerHTML='<span style="color:var(--red);">❌ No key saved — enter your key and click Save Key first</span>';return;}
+  callClaude('Reply with exactly: OK',20)
+    .then(()=>{if(res)res.innerHTML='<span style="color:var(--green);">✅ API key works! Intelligence Feed will function correctly.</span>';})
+    .catch(e=>{if(res)res.innerHTML='<span style="color:var(--red);">❌ '+esc(e.message)+'</span>';});
 }
 
 (function init(){

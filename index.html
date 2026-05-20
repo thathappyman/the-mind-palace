@@ -382,12 +382,48 @@ input:focus,textarea:focus,select:focus{box-shadow:0 0 0 3px rgba(99,102,241,.15
 /* ── RSS Panel cards (reuses .news-cards layout) ─────────────────────────── */
 .rss-empty{text-align:center;padding:28px 16px;color:var(--t4);}
 .rss-empty h4{font-size:13px;color:var(--t3);margin-bottom:4px;}
+.btn-research{background:rgba(59,130,246,.12);color:var(--blue);border:1px solid rgba(59,130,246,.3);}
+.btn-research:hover{background:var(--blue);color:#fff;}
+.research-section{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-top:12px;}
+.research-section h4{font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 5px;}
+.research-section h4:first-child{margin-top:0;}
+.research-section p{font-size:12.5px;color:var(--t2);line-height:1.7;margin-bottom:6px;}
+.research-section ul{list-style:none;font-size:12.5px;color:var(--t2);line-height:1.8;}
+.research-section ul li::before{content:'→ ';color:var(--accent);}
+.qp-week{background:var(--s2);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden;}
+.qp-week-head{padding:8px 12px;background:var(--s3);font-size:11px;font-weight:700;color:var(--t2);display:flex;justify-content:space-between;align-items:center;}
+.qp-day{display:flex;align-items:flex-start;gap:10px;padding:8px 12px;border-top:1px solid var(--border);}
+.qp-day-label{font-size:11px;font-weight:600;color:var(--t3);min-width:90px;flex-shrink:0;padding-top:1px;}
+.qp-day-goals{flex:1;font-size:11.5px;color:var(--t2);}
+.qp-day-goals span{display:inline-block;background:var(--s3);border-radius:4px;padding:1px 6px;margin:1px 3px 1px 0;font-size:11px;}
+.cb-qp{width:16px;height:16px;border-radius:3px;border:1px solid var(--bl);flex-shrink:0;cursor:pointer;margin-top:2px;}
+.cb-qp:checked{accent-color:var(--accent);}
 .rss-source-badge{
   display:inline-flex;align-items:center;gap:4px;
   background:var(--s2);border:1px solid var(--border);
   border-radius:99px;padding:2px 9px;font-size:10px;font-weight:600;color:var(--t3);
   margin:2px;cursor:default;
 }
+
+/* ── Quarter Goals Preview ──────────────────────────────────────────────── */
+.qp-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:14px 0;}
+.qp-day{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px;}
+.qp-day-name{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--accent);margin-bottom:8px;}
+.qp-goal{font-size:11.5px;color:var(--t2);padding:4px 0;border-bottom:1px solid var(--border);line-height:1.4;}
+.qp-goal:last-child{border-bottom:none;}
+.qp-stats{background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:8px;padding:11px 14px;margin:10px 0;font-size:12px;color:var(--t2);}
+
+/* ── Meeting Research Panel ──────────────────────────────────────────────── */
+.research-panel{background:var(--s2);border:1px solid rgba(99,102,241,.3);border-radius:var(--r);padding:18px;margin-top:14px;}
+.research-panel h4{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.research-section{margin-bottom:14px;}
+.research-section h5{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--t4);margin-bottom:6px;}
+.research-section p{font-size:12.5px;color:var(--t2);line-height:1.7;}
+.research-section ul{margin:0;padding-left:16px;font-size:12.5px;color:var(--t2);line-height:1.9;}
+.research-error{color:var(--red);font-size:12px;padding:12px;}
+.btn-research{background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;}
+.btn-research:hover{opacity:.9;}
+@media(max-width:700px){.qp-grid{grid-template-columns:1fr 1fr;}}
 </style>
 </head>
 <body>
@@ -554,11 +590,13 @@ input:focus,textarea:focus,select:focus{box-shadow:0 0 0 3px rgba(99,102,241,.15
 <!-- DAILY GOALS -->
 <div class="page" id="page-daily">
   <div class="ph"><h2>✨ Daily Goals</h2><p>AI-powered daily focus based on your quarterly targets</p></div>
-  <div class="row" style="justify-content:space-between;margin-bottom:14px;">
+  <div class="row" style="justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:7px;">
     <input type="date" id="daily-date" style="width:160px;" onchange="loadDailyGoals()">
-    <div class="row" style="gap:7px;">
+    <div class="row" style="gap:7px;flex-wrap:wrap;">
       <button class="btn bg bsm" onclick="openAddDailyGoal()">+ Manual</button>
-      <button class="btn bai" onclick="generateDailyGoals()">✦ AI Suggest</button>
+      <button class="btn bai bsm" onclick="generateDailyGoals()">✦ AI Today</button>
+      <button class="btn bg bsm" onclick="openQuarterPlan()" title="AI-generate goals for all weekdays this quarter" style="border-color:var(--accent);color:var(--accent);">🗓 Plan Quarter</button>
+      <button class="btn bg bsm" onclick="transferAllGoalsToTodo()" title="Transfer all goals to Today's To-Do List">📋 → Today's To-Do</button>
     </div>
   </div>
   <div id="daily-container"></div>
@@ -1011,7 +1049,8 @@ function renderQuarterly(){const q=getQuarterly();
     return`<div class="card" style="${act?'border-color:var(--accent);':''}">
       <div class="sh"><div><div class="st">${esc(q.name)} ${act?'<span class="badge b-b">Current</span>':''}</div>
       <div style="font-size:10px;color:var(--t4);margin-top:2px;">${fmtDate(q.startDate)} – ${fmtDate(q.endDate)}</div></div>
-      <button class="btn bp bsm" onclick="openAddQGoal('${q.id}')">+ Add Goal</button></div>
+      <button class="btn bg bsm" onclick="openAddQGoal('${q.id}')">+ Add Goal</button>
+      <button class="btn bai bsm" onclick="generateQuarterGoals('${q.id}')">🗓 AI Quarter Plan</button></div>
       <div id="qg-${q.id}">${renderQGoals(q)}</div></div>`;}).join('');}
 
 function renderQGoals(q){const goals=q.goals||[];
@@ -1073,18 +1112,27 @@ function delQGoal(qId,gId){const q=getQuarterly();const qr=q.quarters.find(x=>x.
 // DAILY GOALS
 // ═══════════════════════════════════════════════════════════
 function renderDaily(){const di=document.getElementById('daily-date');if(!di.value)di.value=todayStr();loadDailyGoals();}
-function loadDailyGoals(){const d=document.getElementById('daily-date').value;const daily=getDaily();const dd=daily[d]||{goals:[]};const goals=dd.goals||[];
+function loadDailyGoals(){
+  const d=document.getElementById('daily-date').value;
+  const daily=getDaily();const dd=daily[d]||{goals:[]};const goals=dd.goals||[];
+  const undone=goals.filter(g=>!g.done);
   document.getElementById('daily-container').innerHTML=`<div class="card">
-    <div class="sh"><div class="st">Goals for ${fmtDate(d)}</div></div>
-    ${goals.length?goals.map(g=>`<div class="ti">
+    <div class="sh">
+      <div class="st">Goals for ${fmtDate(d)}</div>
+      ${undone.length?`<button class="btn bg bsm" onclick="transferAllGoalsToTodo()" title="Transfer all uncompleted goals to Today's To-Do list">📋 All → Today's To-Do</button>`:''}
+    </div>
+    ${goals.length?goals.map(g=>`<div class="ti" style="align-items:center;">
       <div class="cb ${g.done?'chk':''}" onclick="toggleDailyGoal('${g.id}')"></div>
       <div class="tt ${g.done?'done':''}" style="flex:1;">${esc(g.title)}</div>
+      ${g.fromQuarter?'<span class="badge b-b" style="font-size:9px;">Q</span>':''}
       ${g.aiGenerated?'<span class="badge b-b" style="font-size:9px;">AI</span>':''}
-      <button onclick="delDailyGoal('${g.id}')" style="background:none;border:none;cursor:pointer;color:var(--t4);font-size:11px;padding:2px 5px;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--t4)'">✕</button>
-      </div>`).join('')
-    :`<div class="es" style="padding:20px 0;"><h4>No goals for this day</h4><p>Click AI Suggest or add manually</p></div>`}
+      <button onclick="transferGoalToTodo('${g.id}')" title="Add this goal to Today's To-Do" style="background:none;border:none;cursor:pointer;color:var(--t4);font-size:13px;padding:2px 4px;transition:color .15s;" onmouseover="this.style.color='var(--green)'" onmouseout="this.style.color='var(--t4)'">📋</button>
+      <button onclick="delDailyGoal('${g.id}')" style="background:none;border:none;cursor:pointer;color:var(--t4);font-size:11px;padding:2px 4px;transition:color .15s;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--t4)'">✕</button>
+    </div>`).join('')
+    :`<div class="es" style="padding:20px 0;"><h4>No goals for this day</h4><p>Click "✦ AI Today" or "🗓 Plan Quarter" to generate</p></div>`}
     </div>
-    ${dd.aiGenerated?`<div class="ais"><h4>✦ AI Generated at ${dd.generatedAt||'—'}</h4><p style="font-size:11px;color:var(--t3);">Based on your active quarterly goals.</p></div>`:''}`;}
+    ${dd.aiGenerated||dd.fromQuarter?`<div class="ais"><h4>${dd.fromQuarter?'🗓 Quarter Plan':'✦ AI Generated'} at ${dd.generatedAt||'—'}</h4><p style="font-size:11px;color:var(--t3);">${dd.fromQuarter?'Generated from your quarterly goal template.':'Based on your active quarterly goals.'}</p></div>`:''}`;
+}
 
 function toggleDailyGoal(id){const d=document.getElementById('daily-date').value;const daily=getDaily();if(!daily[d])return;
   const g=daily[d].goals.find(g=>g.id===id);if(g){g.done=!g.done;save(K.daily,daily);SUPA.push('daily',d,daily[d]);loadDailyGoals();}}
@@ -1672,9 +1720,10 @@ function viewMeeting(id){const meets=getMeetings();const m=meets.find(x=>x.id===
   const det=document.getElementById('meet-detail');det.style.display='block';
   det.innerHTML=`<div class="row" style="justify-content:space-between;margin-bottom:16px;">
     <button class="btn bg bsm" onclick="closeMeetDetail()">← Back</button>
-    <div class="row" style="gap:6px;">
-      <button class="btn bg bsm" onclick="addToGCal('${id}')">📅 Add to Google Calendar</button>
-      <button class="btn bg bsm" onclick="downloadICS('${id}')">⬇ Download .ics</button>
+    <div class="row" style="gap:6px;flex-wrap:wrap;">
+      <button class="btn btn-research bsm" onclick="openMeetingResearch('${id}')">🔍 Research Person</button>
+      <button class="btn bg bsm" onclick="addToGCal('${id}')">📅 Google Calendar</button>
+      <button class="btn bg bsm" onclick="downloadICS('${id}')">⬇ .ics</button>
       <button class="btn bg bsm" onclick="openEditMeeting('${id}')">Edit</button>
       <button class="btn bd bsm" onclick="delMeeting('${id}')">Delete</button>
     </div></div>
@@ -1703,7 +1752,16 @@ function viewMeeting(id){const meets=getMeetings();const m=meets.find(x=>x.id===
       <div style="font-size:13px;font-weight:500;">${esc(linkedConv.title)}</div>
       <div style="font-size:10px;color:var(--t4);">${linkedConv.date} · ${linkedConv.type}</div></div>`
       :`<div style="font-size:12px;color:var(--t4);">No linked conversation — click "🔗 Link" to connect</div>`}
-  </div>`;}
+  </div>
+  ${m.research?`<div id="research-panel-${id}" class="research-section" style="margin-top:10px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <span style="font-size:11px;font-weight:700;color:var(--accent);">🔍 MEETING INTELLIGENCE</span>
+      <button class="btn bg bsm" onclick="runMeetingResearch('${id}',true)">↻ Re-search</button>
+    </div>
+    ${formatResearchHtml(m.research)}
+    <div style="margin-top:8px;font-size:10px;color:var(--t4);">Last researched ${m.researchedAt?new Date(m.researchedAt).toLocaleDateString('en-IN'):''}</div>
+  </div>`:`<div id="research-panel-${id}"></div>`}`;
+}
 
 function closeMeetDetail(){document.getElementById('meet-detail').style.display='none';document.getElementById('meet-list-view').style.display='block';renderMeetings();}
 
@@ -1912,7 +1970,12 @@ function checkMeetingReminders(){const meets=getMeetings().filter(m=>m.status===
 // ═══════════════════════════════════════════════════════════
 // MODAL & TOAST
 // ═══════════════════════════════════════════════════════════
-function showModal(title,html){document.getElementById('mc').innerHTML=`<h3>${title}</h3>${html}`;document.getElementById('mo').classList.add('open');}
+function showModal(title,content,wide){
+  document.getElementById('mc').innerHTML=`<h3 style="margin-bottom:14px;">${title}</h3>${content}`;
+  document.getElementById('mo').classList.add('open');
+  const mb=document.getElementById('mb');
+  if(mb)mb.style.maxWidth=wide?'820px':'580px';
+}
 function closeModal(){document.getElementById('mo').classList.remove('open');}
 document.getElementById('mo').addEventListener('click',function(e){if(e.target===this)closeModal();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
@@ -2454,6 +2517,256 @@ function renderRSSContent(topic,articles){
 }
 
 
+// ═══════════════════════════════════════════════════════════
+// FEATURE 1 — QUARTER DAILY GOALS PLANNER
+// ═══════════════════════════════════════════════════════════
+
+function getQuarterWeekdays(quarter){
+  const start=new Date(quarter.startDate+'T12:00:00');
+  const end=new Date(quarter.endDate+'T12:00:00');
+  const days=[];let d=new Date(start);
+  while(d<=end){
+    const dow=d.getDay();
+    if(dow>0&&dow<6)days.push(d.toISOString().slice(0,10));
+    d.setDate(d.getDate()+1);
+  }
+  return days;
+}
+
+function openQuarterPlan(){
+  const curQ=currentQuarter();
+  if(!curQ){showModal('Plan Quarter','<div class="es"><h4>No active quarter found</h4><p>Configure your fiscal year in Settings and add quarterly goals first.</p></div>');return;}
+  const weekdays=getQuarterWeekdays(curQ);
+  const daily=getDaily();
+  const filled=weekdays.filter(d=>daily[d]&&daily[d].goals&&daily[d].goals.length>0).length;
+  showModal('🗓 Quarter Goal Planner',`
+    <div class="info" style="margin-bottom:12px;">
+      <strong>Quarter: ${esc(curQ.name)}</strong><br>
+      <span style="font-size:11.5px;color:var(--t2);">${fmtDate(curQ.startDate)} → ${fmtDate(curQ.endDate)} &nbsp;·&nbsp; <strong>${weekdays.length}</strong> weekdays &nbsp;·&nbsp; <strong>${filled}</strong> already have goals</span>
+    </div>
+    ${curQ.goals&&curQ.goals.length?
+      `<p style="font-size:12.5px;color:var(--t2);margin-bottom:14px;">AI will generate a Mon–Fri weekly template based on your ${curQ.goals.length} quarterly goal${curQ.goals.length>1?'s':''}. Preview first, then apply to all ${weekdays.length} weekdays.</p>
+       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+         <input type="checkbox" id="qp-overwrite" style="width:auto;"> 
+         <label for="qp-overwrite" style="font-size:12px;color:var(--t2);">Overwrite days that already have goals (${filled} days)</label>
+       </div>`
+      :`<div class="warn"><strong>⚠️ No quarterly goals set.</strong> Add goals to ${esc(curQ.name)} first, then plan your quarter.</div>`}
+    <div id="qp-preview"></div>
+    <div class="row" style="gap:8px;justify-content:flex-end;margin-top:14px;">
+      <button class="btn bg" onclick="closeModal()">Cancel</button>
+      ${curQ.goals&&curQ.goals.length?`<button class="btn bai" onclick="generateQuarterTemplate()">✦ Generate Preview</button>`:''}
+    </div>`);
+}
+
+async function generateQuarterTemplate(){
+  const curQ=currentQuarter();if(!curQ)return;
+  const s=getSettings();
+  if(!s.apiKey){showToast('⚠️ Add API key in Settings first','nudge');return;}
+  document.getElementById('qp-preview').innerHTML=`<div style="text-align:center;padding:28px;"><div class="spin" style="margin:0 auto 10px;"></div><div style="font-size:12px;color:var(--t3);">✦ Generating your weekly template…</div></div>`;
+  const annual=getAnnual();
+  const prompt=`Create a Mon–Fri weekly goal template for someone with these quarterly goals:
+
+Quarter: ${curQ.name}
+Quarterly Goals: ${(curQ.goals||[]).map(g=>g.title+' ('+g.current+'/'+g.target+' '+g.unit+'  - '+g.status+')').join(' | ')}
+Annual Vision: ${annual.vision||'Not set'}
+Annual Theme: ${annual.theme||'Not set'}
+
+Rules:
+- 3-4 specific, actionable daily goals per day
+- Monday: weekly planning, strategic review
+- Tuesday: outreach, meetings, external engagement
+- Wednesday: execution, deep work, follow-ups
+- Thursday: progress check, relationship building
+- Friday: review, reporting, prepare next week
+
+Return ONLY valid JSON, no other text:
+{"monday":["goal1","goal2","goal3"],"tuesday":["..."],"wednesday":["..."],"thursday":["..."],"friday":["..."]}`;
+
+  try{
+    const text=await callClaude(prompt,1200);
+    const m=text.match(/\{[\s\S]*\}/);
+    if(!m)throw new Error('No JSON found in response');
+    const template=JSON.parse(m[0]);
+    renderQuarterPreview(template);
+  }catch(e){
+    document.getElementById('qp-preview').innerHTML=`<div class="es"><p style="color:var(--red);">Error: ${esc(e.message)}</p></div>`;
+  }
+}
+
+function renderQuarterPreview(template){
+  const days=['monday','tuesday','wednesday','thursday','friday'];
+  const labels=['Mon','Tue','Wed','Thu','Fri'];
+  const grid=days.map((day,i)=>`
+    <div class="qp-day">
+      <div class="qp-day-name">${labels[i]}</div>
+      ${(template[day]||[]).map(g=>`<div class="qp-goal">${esc(g)}</div>`).join('')}
+    </div>`).join('');
+
+  const curQ=currentQuarter();
+  const weekdays=getQuarterWeekdays(curQ);
+  const daily=getDaily();
+  const overwrite=document.getElementById('qp-overwrite')?.checked||false;
+  const toFill=weekdays.filter(d=>overwrite||!daily[d]||!daily[d].goals||!daily[d].goals.length).length;
+
+  document.getElementById('qp-preview').innerHTML=`
+    <div class="qp-stats">✅ Preview generated · Will fill <strong>${toFill} weekdays</strong> in ${esc(curQ.name)} · Template repeats each week</div>
+    <div class="qp-grid">${grid}</div>
+    <div class="row" style="gap:8px;justify-content:flex-end;margin-top:8px;">
+      <button class="btn bg" onclick="generateQuarterTemplate()">↺ Regenerate</button>
+      <button class="btn bp" onclick="applyTemplateToQuarter(${JSON.stringify(template).replace(/'/g,'&#39;').replace(/"/g,'&quot;')})">✅ Apply to Full Quarter (${toFill} days)</button>
+    </div>`;
+}
+
+function applyTemplateToQuarter(template){
+  const curQ=currentQuarter();if(!curQ)return;
+  const weekdays=getQuarterWeekdays(curQ);
+  const daily=getDaily();
+  const overwrite=document.getElementById('qp-overwrite')?.checked||false;
+  const dayMap={'1':'monday','2':'tuesday','3':'wednesday','4':'thursday','5':'friday'};
+  let filled=0;
+
+  weekdays.forEach(dateStr=>{
+    if(!overwrite&&daily[dateStr]&&daily[dateStr].goals&&daily[dateStr].goals.length>0)return;
+    const dow=String(new Date(dateStr+'T12:00:00').getDay());
+    const dayName=dayMap[dow];if(!dayName||!template[dayName])return;
+    const goals=template[dayName].map(title=>({id:genId(),title,done:false,aiGenerated:true,fromQuarter:true}));
+    daily[dateStr]={goals,fromQuarter:true,generatedAt:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})};
+    filled++;
+  });
+
+  save(K.daily,daily);
+  // Sync a sample to Supabase (sync each date)
+  Object.keys(daily).forEach(d=>{if(daily[d].fromQuarter)SUPA.push('daily',d,daily[d]);});
+  closeModal();
+  loadDailyGoals();
+  showToast(`✅ Quarter planned! ${filled} weekdays filled with daily goals.`,'success');
+}
+
+// ═══════════════════════════════════════════════════════════
+// FEATURE 2 — TRANSFER DAILY GOALS → TODAY'S TO-DO
+// ═══════════════════════════════════════════════════════════
+
+function transferGoalToTodo(goalId){
+  const d=document.getElementById('daily-date').value;
+  const daily=getDaily();
+  const goal=daily[d]&&daily[d].goals&&daily[d].goals.find(g=>g.id===goalId);
+  if(!goal)return;
+  const today=todayStr();
+  const todos=getTodos();if(!todos[today])todos[today]=[];
+  if(todos[today].some(t=>t.title===goal.title)){showToast('Already in today\'s To-Do list','nudge');return;}
+  todos[today].push({id:genId(),title:goal.title,done:false,createdAt:new Date().toISOString(),fromDailyGoals:true,sourceDate:d});
+  save(K.todos,todos);SUPA.push('todos',today,todos[today]);
+  showToast('📋 Added to Today\'s To-Do!','success');
+}
+
+function transferAllGoalsToTodo(){
+  const d=document.getElementById('daily-date').value;
+  const daily=getDaily();
+  const goals=(daily[d]&&daily[d].goals||[]).filter(g=>!g.done);
+  if(!goals.length){showToast('No uncompleted goals to transfer','nudge');return;}
+  const today=todayStr();
+  const todos=getTodos();if(!todos[today])todos[today]=[];
+  let added=0;
+  goals.forEach(g=>{
+    if(!todos[today].some(t=>t.title===g.title)){
+      todos[today].push({id:genId(),title:g.title,done:false,createdAt:new Date().toISOString(),fromDailyGoals:true,sourceDate:d});
+      added++;
+    }
+  });
+  if(added>0){save(K.todos,todos);SUPA.push('todos',today,todos[today]);}
+  showToast(added>0?`📋 ${added} goal${added>1?'s':''} added to Today's To-Do!`:'All goals already in To-Do list',added>0?'success':'nudge');
+}
+
+// ═══════════════════════════════════════════════════════════
+// FEATURE 3 — MEETING RESEARCH
+// ═══════════════════════════════════════════════════════════
+
+async function openMeetingResearch(meetingId){
+  const meets=getMeetings();const m=meets.find(x=>x.id===meetingId);if(!m)return;
+  const panel=document.getElementById('research-panel-'+meetingId);
+  if(!panel)return;
+
+  // Toggle panel
+  if(panel.style.display==='block'){panel.style.display='none';return;}
+  panel.style.display='block';
+
+  const s=getSettings();
+  if(!s.apiKey){
+    panel.innerHTML=`<div class="research-panel"><div class="research-error">⚠️ Add your API key in Settings → AI first</div></div>`;
+    return;
+  }
+
+  panel.innerHTML=`<div class="research-panel"><div style="text-align:center;padding:24px;"><div class="spin" style="margin:0 auto 10px;"></div><div style="font-size:12px;color:var(--t3);">🔍 Researching ${esc(m.name||m.institution)}…</div><div style="font-size:10px;color:var(--t4);margin-top:4px;">Searching Google News + Claude knowledge</div></div></div>`;
+
+  // Try to pull news from Google about this person/institution
+  let newsContext='';
+  try{
+    const query=([m.name,m.institution,m.state].filter(Boolean).join(' ')).trim();
+    const gNewsUrl='https://news.google.com/rss/search?q='+encodeURIComponent(query)+'&hl=en-IN&gl=IN&ceid=IN:en';
+    const items=await fetchRSSWithProxy(gNewsUrl);
+    if(items.length>0){
+      newsContext='\n\nRecent Google News results:\n'+items.slice(0,5).map(it=>'• "'+it.title+'" ('+it.source+', '+(it.date||'recent')+')').join('\n');
+    }
+  }catch(e){console.warn('[Research] News fetch failed:',e.message);}
+
+  const prompt=`Prepare a professional pre-meeting intelligence brief for this meeting:
+
+Person: ${m.name||'Unknown'}
+Designation: ${m.designation||'Not specified'}
+Organisation: ${m.institution||'Not specified'}
+Location: ${[m.district,m.state].filter(Boolean).join(', ')||'India'}
+Meeting Agenda: ${m.keyAgenda||'General meeting'}
+Meeting Date: ${m.date||'Upcoming'}
+${newsContext}
+
+Provide a structured brief with these exact sections:
+
+**ABOUT THE PERSON**
+Professional background, role, expertise, and relevance to the meeting.
+
+**ABOUT THE ORGANISATION**
+What the organisation does, its scale, focus areas, and recent developments or announcements.
+
+**KEY TALKING POINTS**
+3-5 specific talking points directly relevant to the agenda and the person's background.
+
+**SUGGESTED QUESTIONS**
+3 sharp questions to ask in this meeting.
+
+**THINGS TO KNOW**
+Important context, potential sensitivities, or opportunities to be aware of.
+
+Be specific and practical. If you have limited information about this particular person, focus on their sector, role type, and institution context.`;
+
+  try{
+    const text=await callClaude(prompt,2500);
+    // Format the markdown-style response
+    const formatted=text
+      .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+      .replace(/\n\n/g,'</p><p style="margin-bottom:10px;">')
+      .replace(/\n•/g,'<br>•')
+      .replace(/\n-/g,'<br>•')
+      .replace(/\n(\d+)\./g,'<br>$1.');
+
+    panel.innerHTML=`<div class="research-panel">
+      <h4>🔍 Meeting Intelligence Brief
+        <span style="font-size:10px;color:var(--t4);font-weight:400;margin-left:auto;">${m.name||m.institution} · ${m.date||''}</span>
+        <button class="btn bg bsm" onclick="openMeetingResearch('${meetingId}')" style="margin-left:8px;">✕ Close</button>
+      </h4>
+      <div style="font-size:12.5px;color:var(--t2);line-height:1.75;">
+        <p style="margin-bottom:10px;">${formatted}</p>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;">
+        <button class="btn bai bsm" onclick="openMeetingResearch('${meetingId}')">↺ Refresh</button>
+        <span style="font-size:10px;color:var(--t4);align-self:center;">${newsContext?'✅ Google News + Claude knowledge':'☁️ Claude knowledge (no recent news found)'}</span>
+      </div>
+    </div>`;
+  }catch(e){
+    panel.innerHTML=`<div class="research-panel"><div class="research-error">❌ Research failed: ${esc(e.message)}</div></div>`;
+  }
+}
+
+
 function testAPIKey(){
   const res=document.getElementById('api-test-result');
   if(res)res.innerHTML='<span style="color:var(--t4);">Testing…</span>';
@@ -2462,6 +2775,262 @@ function testAPIKey(){
   callClaude('Reply with exactly: OK',20)
     .then(()=>{if(res)res.innerHTML='<span style="color:var(--green);">✅ API key works! Intelligence Feed will function correctly.</span>';})
     .catch(e=>{if(res)res.innerHTML='<span style="color:var(--red);">❌ '+esc(e.message)+'</span>';});
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// FEATURE 1: AI QUARTER PLAN
+// ═══════════════════════════════════════════════════════════
+const DAY_NAMES=['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+
+async function generateQuarterGoals(qId){
+  const s=getSettings();
+  if(!s.apiKey){showToast('⚠️ Add API key in Settings first','nudge');navigate('settings');return;}
+  const q=getQuarterly().quarters.find(x=>x.id===qId);
+  if(!q||!q.goals?.length){showToast('⚠️ Add quarterly goals first','nudge');return;}
+
+  showModal('🗓 AI Quarter Plan — '+q.name,
+    `<div style="text-align:center;padding:28px;">
+       <div class="spin" style="margin:0 auto 12px;"></div>
+       <div style="font-size:13px;color:var(--t3);">✦ Generating weekly template from your quarterly goals…</div>
+       <div style="font-size:11px;color:var(--t4);margin-top:6px;">${q.startDate} → ${q.endDate}</div>
+     </div>`);
+
+  const goalList=q.goals.map(g=>`- ${g.title} (target: ${g.target||'?'} ${g.unit||''}, currently ${g.current||0})`).join('\n');
+  const prompt=`You are a productivity planner. Given these quarterly goals for ${q.name}:\n${goalList}\n\nCreate a practical Mon–Fri weekly template of 3–5 specific, actionable daily tasks per day that will steadily advance all these goals. Vary tasks across the week so each goal gets regular attention.\n\nReturn ONLY valid JSON:\n{"monday":["task1","task2","task3"],"tuesday":["task1","task2","task3"],"wednesday":["task1","task2","task3"],"thursday":["task1","task2","task3"],"friday":["task1","task2","task3"]}`;
+
+  let template;
+  try{
+    const text=await callClaude(prompt,1200);
+    const m=text.match(/\{[\s\S]*\}/);
+    if(!m)throw new Error('No JSON in response');
+    template=JSON.parse(m[0]);
+    if(!template.monday)throw new Error('Invalid template format');
+  }catch(e){
+    closeModal();showToast('❌ AI error: '+e.message,'error');return;
+  }
+
+  // Calculate all weekdays in this quarter
+  const weekdays=getQuarterWeekdays(q);
+  renderQuarterPlanPreview(weekdays,template,q.name,qId);
+}
+
+function renderQuarterPlanPreview(weekdays,template,qName,qId){
+  // Group weekdays by week (Mon–Sun grouping)
+  const weeks={};
+  weekdays.forEach(d=>{
+    const dt=new Date(d+'T12:00:00');
+    // Get the Monday of this week
+    const dow=dt.getDay();
+    const mon=new Date(dt);mon.setDate(dt.getDate()-(dow===0?6:dow-1));
+    const wk=mon.toISOString().slice(0,10);
+    if(!weeks[wk])weeks[wk]=[];
+    weeks[wk].push(d);
+  });
+
+  const wkEntries=Object.entries(weeks).sort(([a],[b])=>a.localeCompare(b));
+  const total=weekdays.length;
+  const today=new Date();
+
+  const weeksHtml=wkEntries.map(([wkStart,days],wi)=>{
+    const wkEnd=days[days.length-1];
+    const daysHtml=days.map(d=>{
+      const dt=new Date(d+'T12:00:00');
+      const dayKey=DAY_NAMES[dt.getDay()];
+      const goals=(template[dayKey]||[]);
+      const isPast=dt<today;
+      return`<div class="qp-day" style="${isPast?'opacity:.5;':''}">
+        <input type="checkbox" class="cb-qp" id="qp-${d}" ${isPast?'':'checked'} ${isPast?'disabled':''}>
+        <div class="qp-day-label">${dt.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'})}</div>
+        <div class="qp-day-goals">${goals.map(g=>`<span>${esc(g)}</span>`).join('')}</div>
+      </div>`;
+    }).join('');
+    return`<div class="qp-week">
+      <div class="qp-week-head"><span>Week ${wi+1} &nbsp;·&nbsp; ${fmtShort(wkStart)} – ${fmtShort(wkEnd)}</span>
+        <label style="font-size:10px;font-weight:500;color:var(--t4);cursor:pointer;">
+          <input type="checkbox" checked style="margin-right:4px;" onchange="toggleQPWeek('${wkStart}',this.checked)">Select week
+        </label></div>
+      ${daysHtml}
+    </div>`;
+  }).join('');
+
+  const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);
+  const futureCount=weekdays.filter(d=>new Date(d+'T12:00:00')>=tomorrow).length;
+
+  showModal('🗓 AI Quarter Plan — '+qName,
+    `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:7px;">
+      <span style="font-size:12px;color:var(--t3);">${total} weekdays · <span id="qp-sel-count">${futureCount}</span> selected</span>
+      <div class="row" style="gap:6px;">
+        <button class="btn bg bsm" onclick="selectAllQDays(true)">Select All Future</button>
+        <button class="btn bg bsm" onclick="selectAllQDays(false)">Deselect All</button>
+      </div>
+    </div>
+    <div style="max-height:380px;overflow-y:auto;padding-right:4px;">${weeksHtml}</div>
+    <div class="warn" style="margin-top:10px;"><strong>Note:</strong> Goals will be appended to existing goals for each selected day.</div>
+    <div class="row" style="gap:8px;justify-content:flex-end;margin-top:14px;">
+      <button class="btn bg" onclick="closeModal()">Cancel</button>
+      <button class="btn bp" onclick="saveQuarterPlan(${JSON.stringify(weekdays).replace(/"/g,'&quot;')},${JSON.stringify(template).replace(/"/g,'&quot;')})">💾 Save to Selected Days</button>
+    </div>`,true);
+}
+
+function toggleQPWeek(wkStart,checked){
+  document.querySelectorAll('.cb-qp:not([disabled])').forEach(cb=>{
+    if(cb.id.slice(3)>=wkStart){
+      // Only toggle if in same week (first 10 chars of date)
+      const wkMonday=new Date(cb.id.slice(3)+'T12:00:00');
+      const dow=wkMonday.getDay();
+      const mon=new Date(wkMonday);mon.setDate(wkMonday.getDate()-(dow===0?6:dow-1));
+      if(mon.toISOString().slice(0,10)===wkStart)cb.checked=checked;
+    }
+  });
+  updateQPCount();
+}
+
+function selectAllQDays(checked){
+  document.querySelectorAll('.cb-qp:not([disabled])').forEach(cb=>cb.checked=checked);
+  updateQPCount();
+}
+
+function updateQPCount(){
+  const n=document.querySelectorAll('.cb-qp:checked').length;
+  const el=document.getElementById('qp-sel-count');if(el)el.textContent=n;
+}
+
+function saveQuarterPlan(weekdays,template){
+  const selected=weekdays.filter(d=>{
+    const cb=document.getElementById('qp-'+d);
+    return cb&&cb.checked;
+  });
+  if(!selected.length){showToast('No days selected','nudge');return;}
+
+  const daily=getDaily();let added=0;
+  selected.forEach(d=>{
+    const dt=new Date(d+'T12:00:00');
+    const dayKey=DAY_NAMES[dt.getDay()];
+    const goals=template[dayKey]||[];
+    if(!goals.length)return;
+    if(!daily[d])daily[d]={goals:[]};
+    const existing=new Set((daily[d].goals||[]).map(g=>g.title.toLowerCase()));
+    goals.forEach(title=>{
+      if(!existing.has(title.toLowerCase())){
+        daily[d].goals.push({id:genId(),title,done:false,aiGenerated:true,fromQuarter:true});
+        existing.add(title.toLowerCase());
+        added++;
+      }
+    });
+    daily[d].fromQuarter=true;
+    daily[d].generatedAt=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    SUPA.push('daily',d,daily[d]);
+  });
+  save(K.daily,daily);
+  closeModal();
+  showToast('✅ '+added+' goals saved to '+selected.length+' weekdays!','success');
+  if(document.getElementById('page-daily').classList.contains('active'))loadDailyGoals();
+}
+
+// ═══════════════════════════════════════════════════════════
+// FEATURE 3: MEETING RESEARCH (Google News + Claude summary)
+// ═══════════════════════════════════════════════════════════
+async function openMeetingResearch(meetId){
+  const s=getSettings();
+  if(!s.apiKey){showToast('⚠️ Add API key in Settings first','nudge');navigate('settings');return;}
+  runMeetingResearch(meetId,false);
+}
+
+async function runMeetingResearch(meetId,force){
+  const meets=getMeetings();const m=meets.find(x=>x.id===meetId);if(!m)return;
+  let resEl=document.getElementById('research-panel-'+meetId);
+  if(!resEl){showToast('Meeting detail not open — open the meeting first','nudge');return;}
+
+  resEl.innerHTML=`<div style="display:flex;align-items:center;gap:10px;padding:4px 0;">
+    <div class="spin" style="flex-shrink:0;"></div>
+    <div><div style="font-size:12px;font-weight:600;color:var(--text);">Researching ${esc(m.name||m.institution)}…</div>
+    <div style="font-size:10px;color:var(--t4);">Searching news + generating briefing with AI</div></div></div>`;
+
+  // Step 1: Try to get recent news from Google News RSS about the institution
+  let newsContext='';
+  const searches=[
+    m.institution+' '+m.state,
+    m.institution,
+    m.name+' '+m.designation,
+  ].filter(Boolean);
+
+  for(const q of searches.slice(0,2)){
+    try{
+      const url='https://news.google.com/rss/search?q='+encodeURIComponent(q)+'&hl=en-IN&gl=IN&ceid=IN:en';
+      const items=await fetchRSSWithProxy(url);
+      if(items.length>0){
+        newsContext+='\n\nRecent news found for "'+q+'":\n'+
+          items.slice(0,5).map(it=>'- '+it.title+' ('+it.source+', '+it.date+')').join('\n');
+        break;
+      }
+    }catch(e){console.warn('[Research RSS]',e.message);}
+  }
+
+  // Step 2: Ask Claude for comprehensive briefing
+  const prompt=`I have a meeting with ${m.name||'someone'} who is a ${m.designation||'professional'} at ${m.institution||'an institution'} in ${m.district||''}${m.state?', '+m.state:''}.
+
+Meeting agenda: ${m.keyAgenda||'Not specified'}
+Meeting date: ${m.date||'Upcoming'}${newsContext}
+
+Please provide a structured meeting intelligence brief covering:
+
+1. ABOUT THE PERSON: Their likely role, responsibilities, decision-making authority, and background as a ${m.designation||'professional'} at this type of institution.
+
+2. ABOUT THE INSTITUTION: What ${m.institution} likely is, its size/type, student profile, key programs, and standing in ${m.state||'the region'}.
+
+3. KEY TALKING POINTS: 4-5 specific, concrete points to raise given the agenda "${m.keyAgenda||'the meeting'}".
+
+4. SUGGESTED QUESTIONS: 4 thoughtful questions that show preparation and build rapport.
+
+5. POTENTIAL CHALLENGES: 2-3 possible objections or concerns they might raise, and how to address them.
+
+Be specific and practical. This is for a skill development / education partnership meeting.`;
+
+  try{
+    const research=await callClaude(prompt,2000);
+    // Save to meeting
+    const freshMeets=getMeetings();
+    const meeting=freshMeets.find(x=>x.id===meetId);
+    if(meeting){
+      meeting.research=research;
+      meeting.researchedAt=new Date().toISOString();
+      save(K.meetings,freshMeets);
+      SUPA.push('meetings',meetId,meeting);
+    }
+    resEl.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <span style="font-size:11px;font-weight:700;color:var(--accent);">🔍 MEETING INTELLIGENCE</span>
+      <button class="btn bg bsm" onclick="runMeetingResearch('${meetId}',true)">↻ Re-search</button>
+    </div>${formatResearchHtml(research)}${newsContext?`<div style="margin-top:10px;font-size:10px;color:var(--t4);">✦ Based on Claude's knowledge + live Google News results</div>`:''}`;
+    showToast('✅ Research complete!','success');
+  }catch(e){
+    resEl.innerHTML=`<div style="color:var(--red);font-size:12px;">❌ Research failed: ${esc(e.message)}</div>`;
+    showToast('❌ Research error: '+e.message,'error');
+  }
+}
+
+function formatResearchHtml(text){
+  if(!text)return'';
+  // Convert markdown-style headings and bullets to HTML
+  const lines=text.split('\n');
+  let html='';let inList=false;
+  lines.forEach(line=>{
+    const trimmed=line.trim();
+    if(!trimmed){if(inList){html+='</ul>';inList=false;}html+='<br>';return;}
+    if(trimmed.match(/^\d+\.\s*[A-Z ]+:|^#+\s+[A-Z]/)||trimmed.match(/^\*\*[A-Z ]+\*\*:/)){
+      if(inList){html+='</ul>';inList=false;}
+      const heading=trimmed.replace(/^\d+\.\s*/,'').replace(/^#+\s*/,'').replace(/\*\*/g,'').split(':')[0];
+      html+=`<h4>${esc(heading)}</h4>`;
+    }else if(trimmed.match(/^[-•*]\s+/)||trimmed.match(/^\d+\.\s+[a-z]/i)){
+      if(!inList){html+='<ul>';inList=true;}
+      html+=`<li>${esc(trimmed.replace(/^[-•*]\s+/,'').replace(/^\d+\.\s+/,''))}</li>`;
+    }else{
+      if(inList){html+='</ul>';inList=false;}
+      html+=`<p>${esc(trimmed)}</p>`;
+    }
+  });
+  if(inList)html+='</ul>';
+  return html;
 }
 
 (function init(){

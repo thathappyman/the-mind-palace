@@ -163,43 +163,138 @@ select option{background:var(--s2);}
 .eng-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;margin-bottom:7px;}
 .eng-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
 /* Bottom nav for mobile */
+/* ═══ MOBILE — bottom nav approach (≤ 768px) ══════════════════════════════ */
 @media(max-width:768px){
-  /* Sidebar slides in from left — starts fully off-screen */
-  .sidebar{
-    position:fixed;
-    left:calc(-1 * var(--sw));  /* valid negation of CSS variable */
-    top:0;
-    height:100dvh;
-    z-index:400;
-    transition:left .25s ease;
-    box-shadow:none;
-  }
-  .sidebar.open{
-    left:0;
-    box-shadow:6px 0 32px rgba(0,0,0,.7);
-  }
-  /* Overlay that dims the main content when sidebar is open */
-  .sidebar-overlay{
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.55);
-    z-index:399;
-    backdrop-filter:blur(2px);
-    -webkit-backdrop-filter:blur(2px);
-  }
-  .sidebar-overlay.open{display:block;}
-  /* Main content takes full width — sidebar is out of flow */
+  /* Hide desktop sidebar entirely */
+  .sidebar{display:none!important;}
+  /* Hide desktop hamburger — not needed with bottom nav */
+  .hamburger{display:none!important;}
+  .sidebar-overlay{display:none!important;}
+  /* Main content full width, padded for top header + bottom nav */
   .main{
-    padding:60px 14px 80px;  /* top padding leaves room for hamburger */
-    width:100%;
-    margin-left:0;
+    padding:58px 14px 76px!important;
+    width:100%!important;
+    margin-left:0!important;
     overflow-x:hidden;
   }
-  .g2,.g3,.g4{grid-template-columns:1fr;}
-  .hamburger{display:flex!important;}
-  /* Hide sidebar close X on desktop */
-  .sidebar-close{display:flex!important;}
+  /* Collapse grids to single column */
+  .g2,.g3,.g4{grid-template-columns:1fr!important;}
+  /* News cards single column */
+  .news-cards{grid-template-columns:1fr!important;}
+  /* Make modals full-width on mobile */
+  #mb{margin:0 10px;max-height:85vh;}
+  /* Tables scroll horizontally */
+  table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  /* Card padding tighter on mobile */
+  .card{padding:14px 13px;}
+}
+
+/* ═══ MOBILE TOP HEADER ════════════════════════════════════════════════════ */
+.mob-header{
+  display:none;
+  position:fixed;
+  top:0;left:0;right:0;
+  height:52px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  z-index:300;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 14px;
+  box-shadow:0 2px 12px rgba(0,0,0,.3);
+}
+.mob-header-title{font-size:15px;font-weight:700;letter-spacing:-.3px;}
+.mob-header-logo{font-size:13px;font-weight:800;color:var(--accent);}
+.mob-header-btn{
+  background:none;border:none;cursor:pointer;
+  color:var(--t3);font-size:18px;padding:6px;
+  border-radius:8px;line-height:1;
+}
+.mob-header-btn:active{background:var(--s2);}
+
+/* ═══ BOTTOM NAVIGATION BAR ════════════════════════════════════════════════ */
+.mob-nav{
+  display:none;
+  position:fixed;
+  bottom:0;left:0;right:0;
+  height:60px;
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  z-index:300;
+  align-items:stretch;
+  justify-content:space-around;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  box-shadow:0 -2px 16px rgba(0,0,0,.3);
+}
+.mob-nav-item{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;flex:1;cursor:pointer;
+  padding:6px 4px;
+  color:var(--t4);
+  transition:color .15s,background .15s;
+  position:relative;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+}
+.mob-nav-item:active{background:rgba(255,255,255,.04);}
+.mob-nav-item.active{color:var(--accent);}
+.mob-nav-item.active::before{
+  content:'';
+  position:absolute;
+  top:0;left:20%;right:20%;
+  height:2px;
+  background:var(--accent);
+  border-radius:0 0 3px 3px;
+}
+.mob-nav-icon{font-size:19px;line-height:1;}
+.mob-nav-label{font-size:9.5px;font-weight:600;line-height:1;}
+
+/* ═══ MORE SHEET (slides up from bottom) ══════════════════════════════════ */
+.mob-sheet-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.55);
+  z-index:490;
+  backdrop-filter:blur(3px);
+  -webkit-backdrop-filter:blur(3px);
+}
+.mob-sheet-overlay.open{display:block;}
+.mob-sheet{
+  position:fixed;
+  bottom:0;left:0;right:0;
+  background:var(--surface);
+  border-top:1px solid var(--bl);
+  border-radius:20px 20px 0 0;
+  z-index:491;
+  padding:8px 0 calc(16px + env(safe-area-inset-bottom,0px));
+  transform:translateY(100%);
+  transition:transform .28s cubic-bezier(.32,.72,0,1);
+  box-shadow:0 -8px 40px rgba(0,0,0,.5);
+}
+.mob-sheet.open{transform:translateY(0);}
+.mob-sheet-handle{
+  width:40px;height:4px;border-radius:99px;
+  background:var(--s3);margin:0 auto 14px;
+}
+.mob-sheet-title{
+  font-size:11px;font-weight:700;color:var(--t4);
+  text-transform:uppercase;letter-spacing:1px;
+  padding:0 18px 8px;
+}
+.mob-sheet-item{
+  display:flex;align-items:center;gap:14px;
+  padding:13px 20px;cursor:pointer;
+  color:var(--t2);font-size:14px;font-weight:500;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .1s;
+}
+.mob-sheet-item:active{background:var(--s2);}
+.mob-sheet-item.active-page{color:var(--accent);}
+.mob-sheet-icon{font-size:18px;width:24px;text-align:center;}
+
+/* Show mobile elements only on mobile */
+@media(max-width:768px){
+  .mob-header{display:flex;}
+  .mob-nav{display:flex;}
 }
 .hamburger{
   display:none;
@@ -235,7 +330,58 @@ select option{background:var(--s2);}
 </head>
 <body>
 
-<button class="hamburger" id="hamburger" onclick="toggleSidebar()">☰</button>
+<!-- ══ MOBILE TOP HEADER ═══════════════════════════════════════════════════ -->
+<div class="mob-header" id="mob-header">
+  <span class="mob-header-logo">🏛 Mind Palace</span>
+  <span class="mob-header-title" id="mob-title">Dashboard</span>
+  <button class="mob-header-btn" onclick="navigate('settings')" title="Settings">⚙️</button>
+</div>
+
+<!-- ══ MOBILE BOTTOM NAVIGATION ════════════════════════════════════════════ -->
+<div class="mob-nav" id="mob-nav">
+  <div class="mob-nav-item active" id="mn-dashboard" onclick="navigate('dashboard')">
+    <span class="mob-nav-icon">⚡</span><span class="mob-nav-label">Home</span>
+  </div>
+  <div class="mob-nav-item" id="mn-todo" onclick="navigate('todo')">
+    <span class="mob-nav-icon">☑️</span><span class="mob-nav-label">Tasks</span>
+  </div>
+  <div class="mob-nav-item" id="mn-meetings" onclick="navigate('meetings')">
+    <span class="mob-nav-icon">📅</span><span class="mob-nav-label">Meetings</span>
+  </div>
+  <div class="mob-nav-item" id="mn-outreach" onclick="navigate('outreach')">
+    <span class="mob-nav-icon">📢</span><span class="mob-nav-label">Outreach</span>
+  </div>
+  <div class="mob-nav-item" id="mn-more" onclick="openMobSheet()">
+    <span class="mob-nav-icon">⋯</span><span class="mob-nav-label">More</span>
+  </div>
+</div>
+
+<!-- ══ MORE SHEET (slides up) ══════════════════════════════════════════════ -->
+<div class="mob-sheet-overlay" id="mob-sheet-overlay" onclick="closeMobSheet()"></div>
+<div class="mob-sheet" id="mob-sheet">
+  <div class="mob-sheet-handle"></div>
+  <div class="mob-sheet-title">All Pages</div>
+  <div class="mob-sheet-item" id="ms-conversations" onclick="navigate('conversations');closeMobSheet()">
+    <span class="mob-sheet-icon">💬</span>Conversations
+  </div>
+  <div class="mob-sheet-item" id="ms-projects" onclick="navigate('projects');closeMobSheet()">
+    <span class="mob-sheet-icon">📁</span>Projects
+  </div>
+  <div class="mob-sheet-item" id="ms-daily" onclick="navigate('daily');closeMobSheet()">
+    <span class="mob-sheet-icon">✨</span>Daily Goals
+  </div>
+  <div class="mob-sheet-item" id="ms-quarterly" onclick="navigate('quarterly');closeMobSheet()">
+    <span class="mob-sheet-icon">📊</span>Quarterly Goals
+  </div>
+  <div class="mob-sheet-item" id="ms-annual" onclick="navigate('annual');closeMobSheet()">
+    <span class="mob-sheet-icon">🎯</span>Annual Plan
+  </div>
+  <div class="mob-sheet-item" id="ms-settings" onclick="navigate('settings');closeMobSheet()">
+    <span class="mob-sheet-icon">⚙️</span>Settings
+  </div>
+</div>
+
+<!-- ══ DESKTOP HAMBURGER (shown only on desktop if needed) ═════════════════ -->
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 
 <!-- SIDEBAR -->
@@ -586,6 +732,16 @@ async function pullAll(){return SUPA.pullAll();}
 // ═══════════════════════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════════════════════
+// Page title mapping for mobile header
+const PAGE_TITLES={dashboard:'Dashboard',annual:'Annual Plan',quarterly:'Quarterly Goals',
+  daily:'Daily Goals',todo:'To-Do List',conversations:'Conversations',meetings:'Meetings',
+  projects:'Projects','projects-gantt':'Gantt Chart',outreach:'Outreach',settings:'Settings'};
+
+// Which pages map to which bottom nav tab
+const MOB_NAV_MAP={dashboard:'dashboard',annual:'more',quarterly:'more',daily:'more',
+  todo:'todo',conversations:'more',meetings:'meetings',
+  projects:'more','projects-gantt':'more',outreach:'outreach',settings:'settings'};
+
 function navigate(page){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
@@ -599,22 +755,53 @@ function navigate(page){
     meetings:renderMeetings,projects:renderProjects,'projects-gantt':renderGanttPage,
     outreach:renderOutreach,settings:renderSettings};
   if(r[page])r[page]();
-  // Close sidebar on mobile
-  if(window.innerWidth<=768)closeSidebar();
+  // ── Update mobile UI ──────────────────────────────────────────────────────
+  if(window.innerWidth<=768){
+    closeSidebar();
+    // Update mobile header title
+    const t=document.getElementById('mob-title');
+    if(t)t.textContent=PAGE_TITLES[page]||'The Mind Palace';
+    // Update bottom nav active state
+    const navTab=MOB_NAV_MAP[page]||'more';
+    document.querySelectorAll('.mob-nav-item').forEach(n=>n.classList.remove('active'));
+    const activeNav=document.getElementById('mn-'+navTab);
+    if(activeNav)activeNav.classList.add('active');
+    // Update more sheet active state
+    document.querySelectorAll('.mob-sheet-item').forEach(n=>n.classList.remove('active-page'));
+    const activeSheet=document.getElementById('ms-'+page);
+    if(activeSheet)activeSheet.classList.add('active-page');
+    // Scroll to top of content
+    const main=document.getElementById('main');
+    if(main)main.scrollTo({top:0,behavior:'smooth'});
+  }
 }
 
 function toggleSidebar(){
   const sb=document.getElementById('sidebar');
   const ov=document.getElementById('sidebar-overlay');
-  sb.classList.toggle('open');
-  if(ov)ov.classList.toggle('open');
-  // Prevent body scroll when sidebar is open on mobile
-  document.body.style.overflow=sb.classList.contains('open')?'hidden':'';
+  if(sb){sb.classList.toggle('open');}
+  if(ov){ov.classList.toggle('open');}
+  document.body.style.overflow=(sb&&sb.classList.contains('open'))?'hidden':'';
 }
 function closeSidebar(){
-  document.getElementById('sidebar').classList.remove('open');
+  const sb=document.getElementById('sidebar');
   const ov=document.getElementById('sidebar-overlay');
+  if(sb)sb.classList.remove('open');
   if(ov)ov.classList.remove('open');
+  document.body.style.overflow='';
+}
+function openMobSheet(){
+  document.getElementById('mob-sheet').classList.add('open');
+  document.getElementById('mob-sheet-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+  // Mark more tab active
+  document.querySelectorAll('.mob-nav-item').forEach(n=>n.classList.remove('active'));
+  const mn=document.getElementById('mn-more');
+  if(mn)mn.classList.add('active');
+}
+function closeMobSheet(){
+  document.getElementById('mob-sheet').classList.remove('open');
+  document.getElementById('mob-sheet-overlay').classList.remove('open');
   document.body.style.overflow='';
 }
 
@@ -1911,6 +2098,24 @@ async function initNewsPanel(){
   startReminders();checkNudges();checkMeetingReminders();navigate('dashboard');
   // Init news panel after short delay so dashboard renders first
   setTimeout(initNewsPanel, 300);
+  // ── Mobile swipe-to-close gesture on more sheet ─────────────────────────
+  (function initMobileSheet(){
+    const sheet=document.getElementById('mob-sheet');
+    if(!sheet)return;
+    let startY=0,isDragging=false;
+    sheet.addEventListener('touchstart',e=>{startY=e.touches[0].clientY;isDragging=true;},{passive:true});
+    sheet.addEventListener('touchmove',e=>{
+      if(!isDragging)return;
+      const dy=e.touches[0].clientY-startY;
+      if(dy>0)sheet.style.transform=`translateY(${dy}px)`;
+    },{passive:true});
+    sheet.addEventListener('touchend',e=>{
+      if(!isDragging)return;isDragging=false;
+      const dy=e.changedTouches[0].clientY-startY;
+      sheet.style.transform='';
+      if(dy>80)closeMobSheet();
+    });
+  })();
 })();
 </script>
 </body>

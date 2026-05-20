@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#6366f1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>The Mind Palace</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#0a0e1a;--surface:#111827;--s2:#1a2235;--s3:#243048;
+  --border:#1f2d42;--bl:#2d3f5a;
+  --accent:#6366f1;--ah:#4f46e5;--al:rgba(99,102,241,.12);
+  --green:#10b981;--gl:rgba(16,185,129,.12);
+  --amber:#f59e0b;--aml:rgba(245,158,11,.12);
+  --red:#ef4444;--rl:rgba(239,68,68,.12);
+  --blue:#3b82f6;--bll:rgba(59,130,246,.12);
+  --text:#f1f5f9;--t2:#cbd5e1;--t3:#94a3b8;--t4:#64748b;
+  --sw:230px;--r:10px;--rs:6px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:var(--sw);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;height:100vh;overflow-y:auto;}
+.logo{padding:20px 18px 14px;border-bottom:1px solid var(--border);}
+.logo h1{font-size:17px;font-weight:800;letter-spacing:-.5px;}
+.logo h1 span{color:var(--accent);}
+.logo p{font-size:10px;color:var(--t4);margin-top:2px;}
+.sidebar-date{padding:10px 18px;font-size:11px;color:var(--t4);border-bottom:1px solid var(--border);}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--t4);display:inline-block;margin-left:4px;vertical-align:middle;}
+.sync-dot.ok{background:var(--green);}
+.sync-dot.err{background:var(--red);}
+.nav-sec{padding:12px 10px 2px;}
+.nav-lbl{font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--t4);padding:0 8px;margin-bottom:4px;}
+.ni{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--rs);cursor:pointer;font-size:13px;font-weight:500;color:var(--t3);transition:all .15s;margin-bottom:1px;user-select:none;}
+.ni:hover{background:var(--s2);color:var(--text);}
+.ni.active{background:var(--al);color:var(--accent);}
+.ni-icon{font-size:14px;width:18px;text-align:center;}
+.main{flex:1;overflow-y:auto;padding:24px 28px;}
+.page{display:none;animation:fi .2s ease;}
+.page.active{display:block;}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.ph{margin-bottom:22px;}
+.ph h2{font-size:21px;font-weight:700;letter-spacing:-.4px;}
+.ph p{font-size:13px;color:var(--t3);margin-top:3px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px;}
+.ct{font-size:10px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;}
+input,textarea,select{background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:'Outfit',sans-serif;font-size:13px;padding:8px 11px;width:100%;outline:none;transition:border-color .15s;}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);}
+textarea{resize:vertical;min-height:70px;}
+select option{background:var(--s2);}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:var(--rs);font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s;white-space:nowrap;}
+.bp{background:var(--accent);color:#fff;}.bp:hover{background:var(--ah);}
+.bg{background:transparent;color:var(--t3);border:1px solid var(--border);}.bg:hover{background:var(--s2);color:var(--text);}
+.bd{background:var(--rl);color:var(--red);border:1px solid transparent;}.bd:hover{background:var(--red);color:#fff;}
+.bsm{padding:4px 10px;font-size:11px;}
+.bai{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;}.bai:hover{opacity:.9;}
+.bxl{background:var(--gl);color:var(--green);border:1px solid transparent;}.bxl:hover{background:var(--green);color:#fff;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;}
+.pb{height:6px;background:var(--s3);border-radius:99px;overflow:hidden;margin-top:5px;}
+.pf{height:100%;border-radius:99px;transition:width .4s;}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:600;}
+.b-g{background:var(--gl);color:var(--green);}
+.b-a{background:var(--aml);color:var(--amber);}
+.b-r{background:var(--rl);color:var(--red);}
+.b-b{background:var(--al);color:var(--accent);}
+.b-bl{background:var(--bll);color:var(--blue);}
+.b-gr{background:var(--s3);color:var(--t3);}
+.cb{width:17px;height:17px;border-radius:4px;border:2px solid var(--bl);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
+.cb.chk{background:var(--accent);border-color:var(--accent);}
+.cb.chk::after{content:'✓';color:#fff;font-size:10px;font-weight:700;}
+.ti{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--border);}
+.ti:last-child{border-bottom:none;}
+.tt{flex:1;font-size:13.5px;color:var(--t2);}
+.tt.done{text-decoration:line-through;color:var(--t4);}
+#tc{position:fixed;bottom:20px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:7px;pointer-events:none;}
+.toast{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:11px 14px;font-size:12.5px;color:var(--t2);max-width:320px;animation:si .2s ease;box-shadow:0 8px 32px rgba(0,0,0,.5);}
+.toast.reminder{border-color:var(--accent);background:rgba(99,102,241,.15);color:var(--text);}
+.toast.nudge{border-color:var(--amber);background:var(--aml);color:var(--amber);}
+.toast.success{border-color:var(--green);background:var(--gl);color:var(--green);}
+.toast.error{border-color:var(--red);background:var(--rl);color:var(--red);}
+@keyframes si{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
+#mo{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:500;display:none;align-items:center;justify-content:center;}
+#mo.open{display:flex;}
+#mb{background:var(--surface);border:1px solid var(--bl);border-radius:var(--r);padding:24px;width:100%;max-width:580px;max-height:88vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.5);}
+#mb h3{font-size:16px;font-weight:700;margin-bottom:16px;}
+.field{margin-bottom:12px;}
+.field label{display:block;font-size:11px;font-weight:600;color:var(--t3);margin-bottom:4px;}
+.row{display:flex;gap:10px;align-items:center;}
+.sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.st{font-size:13px;font-weight:600;color:var(--t2);}
+.es{text-align:center;padding:32px 16px;color:var(--t4);}
+.es h4{font-size:14px;margin-bottom:5px;color:var(--t3);}
+.es p{font-size:12.5px;}
+.spin{width:16px;height:16px;border:2px solid var(--bl);border-top-color:var(--accent);border-radius:50%;animation:sp .6s linear infinite;display:inline-block;}
+@keyframes sp{to{transform:rotate(360deg)}}
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--s3);border-radius:99px;}
+.qa{display:flex;gap:8px;margin-bottom:12px;}
+.qa input{flex:1;}
+.gi{background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;}
+.gih{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.gtitle{font-size:13.5px;font-weight:500;color:var(--text);}
+.gmeta{font-size:11px;color:var(--t3);margin-top:2px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;}
+.sl{font-size:10px;color:var(--t4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;}
+.sv{font-size:26px;font-weight:800;color:var(--text);line-height:1;}
+.ss{font-size:11px;color:var(--t3);margin-top:3px;}
+.cc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;margin-bottom:10px;cursor:pointer;transition:border-color .15s;}
+.cc:hover{border-color:var(--accent);}
+.nb{background:var(--aml);border:1px solid var(--amber);border-radius:var(--r);padding:11px 14px;margin-bottom:10px;font-size:12.5px;color:var(--amber);display:flex;align-items:center;gap:9px;}
+.tag{display:inline-block;padding:2px 7px;background:var(--s3);border-radius:99px;font-size:10px;color:var(--t3);margin:2px;}
+.ais{background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(139,92,246,.08));border:1px solid rgba(99,102,241,.22);border-radius:var(--r);padding:14px 18px;margin-bottom:14px;}
+.ais h4{font-size:12px;font-weight:600;color:var(--accent);margin-bottom:8px;}
+/* Status colors for outreach engagements */
+.eng-completed{color:var(--green)!important;font-weight:600;}
+.eng-in-progress{color:var(--amber)!important;font-weight:600;}
+.eng-no-movement{color:var(--blue)!important;font-weight:600;}
+.eng-cancelled{color:var(--red)!important;font-weight:600;}
+/* Gantt */
+.gantt-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--border);}
+/* Project status colors */
+.proj-badge.not-started{background:var(--s3);color:var(--t3);}
+.proj-badge.in-progress{background:var(--aml);color:var(--amber);}
+.proj-badge.completed{background:var(--gl);color:var(--green);}
+.proj-badge.on-hold{background:var(--bll);color:var(--blue);}
+.proj-badge.cancelled{background:var(--rl);color:var(--red);}
+/* Meeting status */
+.meet-sch{background:var(--al);color:var(--accent);}
+.meet-done{background:var(--gl);color:var(--green);}
+.meet-can{background:var(--rl);color:var(--red);}
+/* Engagement item */
+.eng-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;margin-bottom:7px;}
+.eng-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+/* Bottom nav for mobile */
+@media(max-width:768px){
+  .sidebar{position:fixed;left:-var(--sw);z-index:400;transition:left .25s;}
+  .sidebar.open{left:0;}
+  .main{padding:14px 14px 80px;}
+  .g2,.g3,.g4{grid-template-columns:1fr;}
+  .hamburger{display:flex!important;}
+}
+.hamburger{display:none;position:fixed;top:14px;left:14px;z-index:450;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:8px;cursor:pointer;font-size:16px;}
+</style>
+</head>
+<body>
+
+<button class="hamburger" id="hamburger" onclick="toggleSidebar()">☰</button>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="logo">
+    <h1>The Mind <span>Palace</span></h1>
+    <p>Personal Productivity Suite <span class="sync-dot" id="sync-dot" title="Sync status"></span></p>
+  </div>
+  <div class="sidebar-date" id="sidebar-date"></div>
+  <div class="nav-sec">
+    <div class="nav-lbl">Overview</div>
+    <div class="ni active" onclick="navigate('dashboard')"><span class="ni-icon">⚡</span>Dashboard</div>
+  </div>
+  <div class="nav-sec">
+    <div class="nav-lbl">Planning</div>
+    <div class="ni" onclick="navigate('annual')"><span class="ni-icon">🎯</span>Annual Plan</div>
+    <div class="ni" onclick="navigate('quarterly')"><span class="ni-icon">📊</span>Quarterly Goals</div>
+    <div class="ni" onclick="navigate('daily')"><span class="ni-icon">✨</span>Daily Goals</div>
+  </div>
+  <div class="nav-sec">
+    <div class="nav-lbl">Day-to-Day</div>
+    <div class="ni" onclick="navigate('todo')"><span class="ni-icon">☑️</span>To-Do List</div>
+    <div class="ni" onclick="navigate('conversations')"><span class="ni-icon">💬</span>Conversations</div>
+    <div class="ni" onclick="navigate('meetings')"><span class="ni-icon">📅</span>Meetings</div>
+  </div>
+  <div class="nav-sec">
+    <div class="nav-lbl">Management</div>
+    <div class="ni" onclick="navigate('projects')"><span class="ni-icon">📁</span>Projects</div>
+    <div class="ni" onclick="navigate('outreach')"><span class="ni-icon">📢</span>Outreach</div>
+  </div>
+  <div class="nav-sec">
+    <div class="nav-lbl">Config</div>
+    <div class="ni" onclick="navigate('settings')"><span class="ni-icon">⚙️</span>Settings</div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main" id="main">
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="ph"><h2>Good <span id="gt"></span> 👋</h2><p id="ddf"></p></div>
+  <div class="g4" id="dash-stats" style="margin-bottom:14px;"></div>
+  <div id="dash-nudges"></div>
+  <div class="g2" style="margin-top:4px;">
+    <div><div class="card"><div class="ct">Today's Tasks</div><div id="dash-todos"></div></div></div>
+    <div><div class="card"><div class="ct">Quarterly Progress</div><div id="dash-qp"></div></div></div>
+  </div>
+  <div class="g2">
+    <div><div class="card"><div class="ct">Upcoming Meetings</div><div id="dash-meets"></div></div></div>
+    <div><div class="card"><div class="ct">Active Projects</div><div id="dash-projs"></div></div></div>
+  </div>
+</div>
+
+<!-- ANNUAL PLAN -->
+<div class="page" id="page-annual">
+  <div class="ph"><h2>🎯 Annual Plan</h2><p>Define your vision and strategic goals for the year</p></div>
+  <div class="card">
+    <div class="ct">Year Vision</div>
+    <div class="g2"><div class="field"><label>Year</label><input type="number" id="annual-year" placeholder="2026" min="2020" max="2040" style="width:120px;"></div>
+    <div class="field"><label>Theme Word</label><input type="text" id="annual-theme" placeholder="e.g. Growth, Scale, Clarity…"></div></div>
+    <div class="field"><label>Vision Statement</label><textarea id="annual-vision" placeholder="What do you want to achieve this year?"></textarea></div>
+    <button class="btn bp" onclick="saveAnnualVision()">💾 Save Vision</button>
+  </div>
+  <div class="card"><div class="sh"><div class="st">Annual Goals</div><button class="btn bp bsm" onclick="openAddAnnualGoal()">+ Add Goal</button></div><div id="annual-goals-list"></div></div>
+</div>
+
+<!-- QUARTERLY GOALS -->
+<div class="page" id="page-quarterly">
+  <div class="ph"><h2>📊 Quarterly Goals</h2><p>Track quarterly milestones — configure fiscal year in Settings first</p></div>
+  <div id="quarterly-content"></div>
+</div>
+
+<!-- DAILY GOALS -->
+<div class="page" id="page-daily">
+  <div class="ph"><h2>✨ Daily Goals</h2><p>AI-powered daily focus based on your quarterly targets</p></div>
+  <div class="row" style="justify-content:space-between;margin-bottom:14px;">
+    <input type="date" id="daily-date" style="width:160px;" onchange="loadDailyGoals()">
+    <div class="row" style="gap:7px;">
+      <button class="btn bg bsm" onclick="openAddDailyGoal()">+ Manual</button>
+      <button class="btn bai" onclick="generateDailyGoals()">✦ AI Suggest</button>
+    </div>
+  </div>
+  <div id="daily-container"></div>
+</div>
+
+<!-- TO-DO -->
+<div class="page" id="page-todo">
+  <div class="ph"><h2>☑️ To-Do List</h2><p>Daily tasks with reminders at 1:30 PM and 4:00 PM</p></div>
+  <div class="row" style="justify-content:space-between;margin-bottom:14px;">
+    <input type="date" id="todo-date" style="width:160px;" onchange="loadTodos()">
+    <div class="row" style="gap:7px;">
+      <span id="rem-status" style="font-size:11px;color:var(--t4);"></span>
+      <button class="btn bg bsm" onclick="enableReminders()">🔔 Enable Reminders</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="qa"><input type="text" id="todo-input" placeholder="Add a task and press Enter…" onkeydown="if(event.key==='Enter')addTodo()"><button class="btn bp" onclick="addTodo()">+ Add</button></div>
+    <div id="todo-list"></div>
+  </div>
+  <div class="card" style="background:var(--s2);"><div class="ct">Progress</div><div id="todo-stats"></div></div>
+</div>
+
+<!-- CONVERSATIONS -->
+<div class="page" id="page-conversations">
+  <div class="ph"><h2>💬 Conversation Log</h2><p>Capture notes, derive AI insights, and link conversations</p></div>
+  <div id="conv-detail" style="display:none;"></div>
+  <div id="conv-list-view">
+    <div class="row" style="margin-bottom:12px;gap:7px;">
+      <input type="text" id="conv-search" placeholder="🔍 Search…" style="flex:1;" oninput="renderConversations()">
+      <select id="conv-filter" onchange="renderConversations()" style="width:150px;">
+        <option value="">All Types</option><option value="work">Work Meeting</option>
+        <option value="client">Client Call</option><option value="personal">Personal</option><option value="other">Other</option>
+      </select>
+      <button class="btn bp" onclick="openNewConvModal()">+ New</button>
+    </div>
+    <div id="conv-list"></div>
+  </div>
+</div>
+
+<!-- MEETINGS -->
+<div class="page" id="page-meetings">
+  <div class="ph"><h2>📅 Meeting Tracker</h2><p>Schedule, track, and export meetings — your personal assistant</p></div>
+  <div id="meet-detail" style="display:none;"></div>
+  <div id="meet-list-view">
+    <div class="row" style="margin-bottom:12px;gap:7px;">
+      <input type="text" id="meet-search" placeholder="🔍 Search institution, person, agenda…" style="flex:1;" oninput="renderMeetings()">
+      <select id="meet-filter" onchange="renderMeetings()" style="width:140px;">
+        <option value="">All Status</option><option value="scheduled">Scheduled</option>
+        <option value="completed">Completed</option><option value="cancelled">Cancelled</option>
+      </select>
+      <button class="btn bxl bsm" onclick="exportMeetingsExcel()">⬇ Excel</button>
+      <button class="btn bp" onclick="openNewMeetModal()">+ New</button>
+    </div>
+    <div id="meet-list"></div>
+  </div>
+</div>
+
+<!-- PROJECTS -->
+<div class="page" id="page-projects">
+  <div class="ph"><h2>📁 Project Tracker</h2><p>Track all projects with Gantt chart and CEO-ready Excel reports</p></div>
+  <div class="row" style="margin-bottom:14px;gap:7px;justify-content:flex-end;">
+    <button class="btn bxl bsm" onclick="exportProjectsExcel()">⬇ Excel Report</button>
+    <button class="btn bg bsm" onclick="navigate('projects-gantt')">📊 Gantt View</button>
+    <button class="btn bp" onclick="openAddProject()">+ New Project</button>
+  </div>
+  <div id="projects-list"></div>
+</div>
+
+<!-- PROJECTS GANTT -->
+<div class="page" id="page-projects-gantt">
+  <div class="ph"><h2>📊 Gantt Chart</h2><p>Visual project timeline — read-only, perfect for CEO reports</p></div>
+  <div class="row" style="margin-bottom:14px;gap:7px;">
+    <button class="btn bg bsm" onclick="navigate('projects')">← Project List</button>
+    <button class="btn bxl bsm" onclick="exportProjectsExcel()">⬇ Excel Report</button>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div id="gantt-container"></div>
+  </div>
+  <div class="card" style="margin-top:12px;">
+    <div class="ct">Legend</div>
+    <div class="row" style="flex-wrap:wrap;gap:12px;font-size:12px;">
+      <span><span style="display:inline-block;width:12px;height:12px;background:#64748b;border-radius:2px;margin-right:4px;"></span>Not Started</span>
+      <span><span style="display:inline-block;width:12px;height:12px;background:var(--amber);border-radius:2px;margin-right:4px;"></span>In Progress</span>
+      <span><span style="display:inline-block;width:12px;height:12px;background:var(--green);border-radius:2px;margin-right:4px;"></span>Completed</span>
+      <span><span style="display:inline-block;width:12px;height:12px;background:var(--blue);border-radius:2px;margin-right:4px;"></span>On Hold</span>
+      <span><span style="display:inline-block;width:12px;height:12px;background:var(--red);border-radius:2px;margin-right:4px;"></span>Cancelled</span>
+      <span><span style="display:inline-block;width:2px;height:12px;background:var(--red);margin-right:4px;"></span>Today</span>
+    </div>
+  </div>
+</div>
+
+<!-- OUTREACH -->
+<div class="page" id="page-outreach">
+  <div class="ph"><h2>📢 Outreach Tracker</h2><p>Track institution outreach, engagements, and generate CEO reports</p></div>
+  <div id="out-detail" style="display:none;"></div>
+  <div id="out-list-view">
+    <div class="row" style="margin-bottom:12px;gap:7px;">
+      <input type="text" id="out-search" placeholder="🔍 Search institution, PoC, district…" style="flex:1;" oninput="renderOutreach()">
+      <select id="out-state-filter" onchange="renderOutreach()" style="width:140px;">
+        <option value="">All States</option>
+      </select>
+      <button class="btn bxl bsm" onclick="exportOutreachExcel()">⬇ Excel Report</button>
+      <button class="btn bp" onclick="openNewOutreach()">+ New Entry</button>
+    </div>
+    <div id="out-list"></div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="page" id="page-settings">
+  <div class="ph"><h2>⚙️ Settings</h2><p>AI, cloud sync, and preferences</p></div>
+  <div class="card">
+    <div class="ct">AI — Anthropic API Key</div>
+    <div class="field"><label>API Key</label>
+      <div class="row"><input type="password" id="s-api" placeholder="sk-ant-api03-…" style="font-family:monospace;font-size:12px;"><button class="btn bg bsm" onclick="toggleKey('s-api')">👁</button></div>
+      <p style="font-size:10px;color:var(--t4);margin-top:5px;">Get free key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent);">console.anthropic.com</a></p>
+    </div>
+    <button class="btn bp bsm" onclick="saveApiKey()">Save Key</button>
+  </div>
+  <div class="card">
+    <div class="ct">Cloud Sync — Supabase</div>
+    <p style="font-size:12px;color:var(--t3);margin-bottom:12px;">Sync all data across your PC and Android. See README for setup steps.</p>
+    <div class="g2">
+      <div class="field"><label>Supabase Project URL</label><input type="text" id="s-sup-url" placeholder="https://xxxxx.supabase.co"></div>
+      <div class="field"><label>Supabase Anon Key</label>
+        <div class="row"><input type="password" id="s-sup-key" placeholder="eyJ…" style="font-family:monospace;font-size:11px;"><button class="btn bg bsm" onclick="toggleKey('s-sup-key')">👁</button></div>
+      </div>
+    </div>
+    <div class="field"><label>Sync Key (secret phrase shared across devices)</label><input type="text" id="s-sync-key" placeholder="e.g. mindpalace-yourname-2026"></div>
+    <div class="row" style="gap:8px;">
+      <button class="btn bp bsm" onclick="saveSupabase()">Save & Connect</button>
+      <button class="btn bg bsm" onclick="pullAll().then(ok=>showToast(ok?'✅ Data pulled from cloud!':'⚠️ Pull failed — check credentials','ok'?'success':'error'))">↓ Pull from Cloud</button>
+      <span id="sync-status-text" style="font-size:11px;color:var(--t4);"></span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct">Fiscal Year</div>
+    <div class="g2">
+      <div class="field"><label>Start Month</label>
+        <select id="s-fy-start"><option value="1">January</option><option value="4">April</option><option value="7">July</option><option value="10">October</option></select>
+      </div>
+      <div class="field"><label>Fiscal Year Starting Year</label><input type="number" id="s-fy-year" min="2020" max="2040" placeholder="2026"></div>
+    </div>
+    <button class="btn bp bsm" onclick="saveFY()">Save & Regenerate Quarters</button>
+  </div>
+  <div class="card">
+    <div class="ct">Reminders</div>
+    <p style="font-size:12px;color:var(--t3);margin-bottom:10px;">Daily alerts at <strong>1:30 PM</strong> and <strong>4:00 PM</strong> for pending tasks and upcoming meetings.</p>
+    <button class="btn bg bsm" onclick="enableReminders()">🔔 Enable Desktop Notifications</button>
+  </div>
+  <div class="card" style="border-color:rgba(239,68,68,.3);">
+    <div class="ct" style="color:var(--red);">Danger Zone</div>
+    <button class="btn bd bsm" onclick="clearAll()">🗑 Delete All Local Data</button>
+  </div>
+</div>
+
+</main>
+
+<div id="tc"></div>
+<div id="mo"><div id="mb"><div id="mc"></div></div></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONSTANTS & UTILITIES
+// ═══════════════════════════════════════════════════════════
+const K={settings:'mp_settings',annual:'mp_annual',quarterly:'mp_quarterly',
+  daily:'mp_daily',todos:'mp_todos',convs:'mp_convs',
+  projects:'mp_projects',outreach:'mp_outreach',meetings:'mp_meetings'};
+
+const load=k=>{try{return JSON.parse(localStorage.getItem(k))||null;}catch{return null;}};
+const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const genId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const todayStr=()=>new Date().toISOString().slice(0,10);
+const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const fmtDate=s=>{if(!s)return'';try{return new Date(s+'T12:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});}catch{return s;}};
+const fmtShort=s=>{if(!s)return'';try{return new Date(s+'T12:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'});}catch{return s;}};
+
+const getSettings=()=>load(K.settings)||{apiKey:'',supabaseUrl:'',supabaseKey:'',syncKey:'',fyStart:1,fyYear:new Date().getFullYear(),remindersSent:{}};
+const getAnnual=()=>load(K.annual)||{year:new Date().getFullYear(),theme:'',vision:'',goals:[]};
+const getQuarterly=()=>load(K.quarterly)||{quarters:[]};
+const getDaily=()=>load(K.daily)||{};
+const getTodos=()=>load(K.todos)||{};
+const getConvs=()=>load(K.convs)||[];
+const getProjects=()=>load(K.projects)||[];
+const getOutreach=()=>load(K.outreach)||[];
+const getMeetings=()=>load(K.meetings)||[];
+
+// ═══════════════════════════════════════════════════════════
+// SUPABASE SYNC
+// ═══════════════════════════════════════════════════════════
+const SUPA={
+  _h(){const s=getSettings();if(!s.supabaseUrl||!s.supabaseKey)return null;
+    return{'Content-Type':'application/json','apikey':s.supabaseKey,'Authorization':'Bearer '+s.supabaseKey};},
+  _url(){const s=getSettings();return s.supabaseUrl+'/rest/v1/mp_records';},
+
+  push(col,id,data){
+    const h=this._h();const s=getSettings();
+    if(!h||!s.syncKey)return;
+    fetch(this._url(),{method:'POST',headers:{...h,'Prefer':'resolution=merge-duplicates'},
+      body:JSON.stringify({sync_key:s.syncKey,collection:col,record_id:id,payload:data,updated_at:new Date().toISOString()})
+    }).then(r=>{setSyncDot(r.ok);}).catch(()=>setSyncDot(false));
+  },
+
+  del(col,id){
+    const h=this._h();const s=getSettings();if(!h||!s.syncKey)return;
+    const q=`sync_key=eq.${encodeURIComponent(s.syncKey)}&collection=eq.${col}&record_id=eq.${id}`;
+    fetch(this._url()+'?'+q,{method:'DELETE',headers:h}).catch(()=>{});
+  },
+
+  async pullAll(){
+    const h=this._h();const s=getSettings();if(!h||!s.syncKey)return false;
+    try{
+      const r=await fetch(this._url()+`?sync_key=eq.${encodeURIComponent(s.syncKey)}&select=collection,record_id,payload`,{headers:h});
+      if(!r.ok)return false;
+      const recs=await r.json();
+      const g={};recs.forEach(r=>{(g[r.collection]=g[r.collection]||{})[r.record_id]=r.payload;});
+      if(g.annual)save(K.annual,g.annual.singleton||getAnnual());
+      if(g.quarterly)save(K.quarterly,g.quarterly.singleton||getQuarterly());
+      if(g.todos){const t=getTodos();Object.assign(t,g.todos);save(K.todos,t);}
+      if(g.daily){const d=getDaily();Object.assign(d,g.daily);save(K.daily,d);}
+      if(g.conversations)save(K.convs,Object.values(g.conversations));
+      if(g.projects)save(K.projects,Object.values(g.projects));
+      if(g.outreach)save(K.outreach,Object.values(g.outreach));
+      if(g.meetings)save(K.meetings,Object.values(g.meetings));
+      setSyncDot(true);return true;
+    }catch(e){setSyncDot(false);return false;}
+  }
+};
+
+function setSyncDot(ok){
+  const d=document.getElementById('sync-dot');
+  if(d){d.className='sync-dot '+(ok?'ok':'err');d.title=ok?'Cloud synced':'Sync error';}
+}
+
+async function pullAll(){return SUPA.pullAll();}
+
+// ═══════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════
+function navigate(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  const el=document.getElementById('page-'+page);
+  if(el)el.classList.add('active');
+  document.querySelectorAll('.ni').forEach(n=>{
+    if((n.getAttribute('onclick')||'').includes("'"+page+"'"))n.classList.add('active');
+  });
+  const r={dashboard:renderDashboard,annual:renderAnnual,quarterly:renderQuarterly,
+    daily:renderDaily,todo:renderTodo,conversations:renderConversations,
+    meetings:renderMeetings,projects:renderProjects,'projects-gantt':renderGanttPage,
+    outreach:renderOutreach,settings:renderSettings};
+  if(r[page])r[page]();
+  // Close sidebar on mobile
+  if(window.innerWidth<=768)document.getElementById('sidebar').classList.remove('open');
+}
+
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');}
+
+// ═══════════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════════
+function renderDashboard(){
+  const now=new Date();const h=now.getHours();
+  document.getElementById('gt').textContent=h<12?'morning':h<17?'afternoon':'evening';
+  document.getElementById('ddf').textContent=now.toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const t=todayStr();const todos=getTodos()[t]||[];
+  const done=todos.filter(x=>x.done).length;
+  const qAll=getQuarterly().quarters.flatMap(q=>q.goals||[]);
+  const onTk=qAll.filter(g=>g.status==='on-track'||g.status==='complete').length;
+  const convs=getConvs();const meets=getMeetings();const projs=getProjects();
+  const upcoming=meets.filter(m=>m.status==='scheduled'&&m.date>=t).sort((a,b)=>a.date.localeCompare(b.date));
+
+  document.getElementById('dash-stats').innerHTML=`
+    <div class="stat-card"><div class="sl">Today's Tasks</div><div class="sv">${done}/${todos.length}</div><div class="ss">completed</div></div>
+    <div class="stat-card"><div class="sl">Goals On Track</div><div class="sv">${onTk}/${qAll.length}</div><div class="ss">quarterly goals</div></div>
+    <div class="stat-card"><div class="sl">Active Projects</div><div class="sv">${projs.filter(p=>p.status==='in-progress').length}</div><div class="ss">in progress</div></div>
+    <div class="stat-card"><div class="sl">Meetings Scheduled</div><div class="sv">${upcoming.length}</div><div class="ss">upcoming</div></div>`;
+
+  const atRisk=qAll.filter(g=>g.status==='at-risk'||g.status==='off-track');
+  document.getElementById('dash-nudges').innerHTML=atRisk.map(g=>`
+    <div class="nb">⚠️ <strong>${esc(g.title)}</strong> is <strong>${g.status==='off-track'?'off track':'at risk'}</strong> — ${g.current||0}/${g.target||'?'} ${g.unit||''}</div>`).join('');
+
+  document.getElementById('dash-todos').innerHTML=todos.length
+    ?todos.slice(0,5).map(t=>`<div class="ti"><div class="cb ${t.done?'chk':''}" onclick="dashToggle('${t.id}')"></div><div class="tt ${t.done?'done':''}">${esc(t.title)}</div></div>`).join('')
+    +(todos.length>5?`<div style="font-size:11px;color:var(--t4);padding-top:6px;">+${todos.length-5} more — <span style="cursor:pointer;color:var(--accent)" onclick="navigate('todo')">View all</span></div>`:'')
+    :`<div class="es" style="padding:12px;"><p><span style="cursor:pointer;color:var(--accent)" onclick="navigate('todo')">Add tasks for today →</span></p></div>`;
+
+  const curQ=currentQuarter();
+  document.getElementById('dash-qp').innerHTML=curQ
+    ?`<div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:8px;">${curQ.name}</div>`
+      +(curQ.goals||[]).map(g=>{const p=g.target?Math.min(100,Math.round((g.current||0)/g.target*100)):0;
+        const c=g.status==='on-track'||g.status==='complete'?'var(--green)':g.status==='at-risk'?'var(--amber)':'var(--red)';
+        return`<div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t2);margin-bottom:3px;"><span>${esc(g.title)}</span><span class="badge ${g.status==='on-track'||g.status==='complete'?'b-g':g.status==='at-risk'?'b-a':'b-r'}">${g.status||'—'}</span></div>
+          <div class="pb"><div class="pf" style="width:${p}%;background:${c};"></div></div></div>`;}).join('')
+    :`<div class="es" style="padding:12px;"><p><span style="cursor:pointer;color:var(--accent)" onclick="navigate('quarterly')">Set up goals →</span></p></div>`;
+
+  document.getElementById('dash-meets').innerHTML=upcoming.length
+    ?upcoming.slice(0,4).map(m=>`<div class="ti" style="cursor:pointer;" onclick="navigate('meetings')">
+      <div style="flex:1;"><div style="font-size:12px;font-weight:500;color:var(--t2);">${esc(m.institution)}</div>
+      <div style="font-size:10px;color:var(--t4);">${fmtDate(m.date)} · ${esc(m.name||'')} · ${esc(m.district||'')}</div></div>
+      <span class="badge meet-sch">Scheduled</span></div>`).join('')
+    :`<div class="es" style="padding:12px;"><p><span style="cursor:pointer;color:var(--accent)" onclick="navigate('meetings')">Schedule a meeting →</span></p></div>`;
+
+  document.getElementById('dash-projs').innerHTML=projs.filter(p=>p.status==='in-progress').length
+    ?projs.filter(p=>p.status==='in-progress').slice(0,4).map(p=>`<div class="ti">
+      <div style="flex:1;"><div style="font-size:12px;font-weight:500;color:var(--t2);">${esc(p.title)}</div>
+      <div style="font-size:10px;color:var(--t4);">Due ${fmtDate(p.endDate)}</div></div>
+      <span class="badge b-a">In Progress</span></div>`).join('')
+    :`<div class="es" style="padding:12px;"><p><span style="cursor:pointer;color:var(--accent)" onclick="navigate('projects')">Add projects →</span></p></div>`;
+}
+
+function dashToggle(id){const t=todayStr(),todos=getTodos();const item=todos[t]&&todos[t].find(x=>x.id===id);
+  if(item){item.done=!item.done;save(K.todos,todos);SUPA.push('todos',t,todos[t]);renderDashboard();}
+}
+function currentQuarter(){const now=new Date();return getQuarterly().quarters.find(q=>new Date(q.startDate)<=now&&new Date(q.endDate)>=now)||null;}
+
+// ═══════════════════════════════════════════════════════════
+// ANNUAL PLAN
+// ═══════════════════════════════════════════════════════════
+function renderAnnual(){const a=getAnnual();
+  document.getElementById('annual-year').value=a.year||new Date().getFullYear();
+  document.getElementById('annual-theme').value=a.theme||'';
+  document.getElementById('annual-vision').value=a.vision||'';
+  renderAnnualGoals();}
+
+function saveAnnualVision(){const a=getAnnual();
+  a.year=parseInt(document.getElementById('annual-year').value)||new Date().getFullYear();
+  a.theme=document.getElementById('annual-theme').value.trim();
+  a.vision=document.getElementById('annual-vision').value.trim();
+  save(K.annual,a);SUPA.push('annual','singleton',a);showToast('✅ Vision saved!','success');}
+
+function renderAnnualGoals(){const a=getAnnual();const goals=a.goals||[];
+  document.getElementById('annual-goals-list').innerHTML=goals.length
+    ?goals.map(g=>`<div class="gi"><div class="gih">
+      <div><div class="gtitle">${esc(g.title)}</div><div class="gmeta">${esc(g.category||'General')}${g.description?' · '+esc(g.description):''}</div></div>
+      <div class="row" style="gap:5px;"><span class="badge ${g.status==='complete'?'b-g':g.status==='in-progress'?'b-b':'b-a'}">${g.status||'planned'}</span>
+      <button class="btn bg bsm" onclick="editAnnualGoal('${g.id}')">Edit</button>
+      <button class="btn bg bsm" onclick="delAnnualGoal('${g.id}')">✕</button></div></div></div>`).join('')
+    :`<div class="es"><h4>No goals yet</h4><p>Click "+ Add Goal" to get started</p></div>`;}
+
+function openAddAnnualGoal(prefill){const g=prefill||{};
+  showModal((g.id?'Edit':'Add')+' Annual Goal',`
+    <div class="field"><label>Goal Title *</label><input type="text" id="m-ag-t" value="${esc(g.title||'')}" placeholder="e.g. Grow revenue by 30%"></div>
+    <div class="g2"><div class="field"><label>Category</label><input type="text" id="m-ag-c" value="${esc(g.category||'')}" placeholder="Revenue, Health…"></div>
+    <div class="field"><label>Status</label><select id="m-ag-s"><option value="planned" ${(!g.status||g.status==='planned')?'selected':''}>Planned</option>
+    <option value="in-progress" ${g.status==='in-progress'?'selected':''}>In Progress</option>
+    <option value="complete" ${g.status==='complete'?'selected':''}>Complete</option></select></div></div>
+    <div class="field"><label>Description</label><textarea id="m-ag-d">${esc(g.description||'')}</textarea></div>
+    <input type="hidden" id="m-ag-id" value="${g.id||''}">
+    <div class="row" style="gap:8px;justify-content:flex-end;margin-top:14px;">
+      <button class="btn bg" onclick="closeModal()">Cancel</button>
+      <button class="btn bp" onclick="saveAnnualGoal()">Save</button></div>`);}
+
+function editAnnualGoal(id){const g=getAnnual().goals.find(g=>g.id===id);if(g)openAddAnnualGoal(g);}
+
+function saveAnnualGoal(){const title=document.getElementById('m-ag-t').value.trim();
+  if(!title){showToast('Enter a goal title','error');return;}
+  const a=getAnnual();const id=document.getElementById('m-ag-id').value;
+  const obj={id:id||genId(),title,category:document.getElementById('m-ag-c').value.trim(),
+    description:document.getElementById('m-ag-d').value.trim(),status:document.getElementById('m-ag-s').value};
+  if(id){const i=a.goals.findIndex(g=>g.id===id);if(i>=0)a.goals[i]=obj;}else a.goals.push(obj);
+  save(K.annual,a);SUPA.push('annual','singleton',a);closeModal();renderAnnualGoals();showToast('✅ Saved!','success');}
+
+function delAnnualGoal(id){const a=getAnnual();a.goals=a.goals.filter(g=>g.id!==id);save(K.annual,a);SUPA.push('annual','singleton',a);renderAnnualGoals();}
+
+// ═══════════════════════════════════════════════════════════
+// QUARTERLY GOALS
+// ═══════════════════════════════════════════════════════════
+function renderQuarterly(){const q=getQuarterly();
+  if(!q.quarters.length){document.getElementById('quarterly-content').innerHTML=`<div class="card"><div class="es"><h4>No quarters yet</h4><p>Configure fiscal year in Settings first</p><button class="btn bp" style="margin-top:10px;" onclick="navigate('settings')">Settings →</button></div></div>`;return;}
+  const now=new Date();
+  document.getElementById('quarterly-content').innerHTML=q.quarters.map(q=>{const act=new Date(q.startDate)<=now&&new Date(q.endDate)>=now;
+    return`<div class="card" style="${act?'border-color:var(--accent);':''}">
+      <div class="sh"><div><div class="st">${esc(q.name)} ${act?'<span class="badge b-b">Current</span>':''}</div>
+      <div style="font-size:10px;color:var(--t4);margin-top:2px;">${fmtDate(q.startDate)} – ${fmtDate(q.endDate)}</div></div>
+      <button class="btn bp bsm" onclick="openAddQGoal('${q.id}')">+ Add Goal</button></div>
+      <div id="qg-${q.id}">${renderQGoals(q)}</div></div>`;}).join('');}
+
+function renderQGoals(q){const goals=q.goals||[];
+  if(!goals.length)return`<div style="font-size:12px;color:var(--t4);padding:6px 0;">No goals yet.</div>`;
+  return goals.map(g=>{const p=g.target?Math.min(100,Math.round((g.current||0)/g.target*100)):0;
+    const c=g.status==='on-track'||g.status==='complete'?'var(--green)':g.status==='at-risk'?'var(--amber)':'var(--red)';
+    return`<div class="gi"><div class="gih"><div style="flex:1;"><div class="gtitle">${esc(g.title)}</div>
+      <div class="gmeta">${g.current||0} / ${g.target||'?'} ${g.unit||''}</div></div>
+      <div class="row" style="gap:5px;"><span class="badge ${g.status==='on-track'||g.status==='complete'?'b-g':g.status==='at-risk'?'b-a':'b-r'}">${g.status||'—'}</span>
+      <button class="btn bg bsm" onclick="openUpdateQGoal('${q.id}','${g.id}')">Update</button>
+      <button class="btn bg bsm" onclick="delQGoal('${q.id}','${g.id}')">✕</button></div></div>
+      <div class="pb"><div class="pf" style="width:${p}%;background:${c};"></div></div></div>`;}).join('');}
+
+function openAddQGoal(qId){showModal('Add Quarterly Goal',`
+  <div class="field"><label>Goal Title *</label><input type="text" id="m-qg-t" placeholder="e.g. Sign 5 new clients"></div>
+  <div class="g2"><div class="field"><label>Target</label><input type="number" id="m-qg-tgt" placeholder="5"></div>
+  <div class="field"><label>Unit</label><input type="text" id="m-qg-u" placeholder="clients, %, ₹L…"></div></div>
+  <div class="field"><label>Current Progress</label><input type="number" id="m-qg-cur" placeholder="0"></div>
+  <div class="field"><label>Status</label><select id="m-qg-st"><option value="not-started">Not Started</option><option value="on-track">On Track</option>
+  <option value="at-risk">At Risk</option><option value="off-track">Off Track</option><option value="complete">Complete</option></select></div>
+  <div class="row" style="gap:8px;justify-content:flex-end;margin-top:14px;">
+    <button class="btn bg" onclick="closeModal()">Cancel</button>
+    <button class="btn bp" onclick="saveQGoal('${qId}')">Add</button></div>`);}
+
+function saveQGoal(qId){const title=document.getElementById('m-qg-t').value.trim();if(!title){showToast('Enter a title','error');return;}
+  const q=getQuarterly();const qr=q.quarters.find(x=>x.id===qId);if(!qr)return;if(!qr.goals)qr.goals=[];
+  qr.goals.push({id:genId(),title,target:parseFloat(document.getElementById('m-qg-tgt').value)||null,
+    unit:document.getElementById('m-qg-u').value.trim(),
+    current:parseFloat(document.getElementById('m-qg-cur').value)||0,
+    status:document.getElementById('m-qg-st').value});
+  save(K.quarterly,q);SUPA.push('quarterly','singleton',q);closeModal();renderQuarterly();showToast('✅ Added!','success');}
+
+function openUpdateQGoal(qId,gId){const q=getQuarterly();const qr=q.quarters.find(x=>x.id===qId);
+  const g=qr?.goals?.find(x=>x.id===gId);if(!g)return;
+  showModal('Update: '+g.title,`
+    <div class="field"><label>Current Progress</label>
+      <div class="row"><input type="number" id="m-u-c" value="${g.current||0}" style="width:100px;flex-shrink:0;">
+      <div style="font-size:12px;color:var(--t3);">/ ${g.target||'?'} ${g.unit||''}</div></div></div>
+    <div class="field"><label>Status</label><select id="m-u-s">
+      <option value="not-started" ${g.status==='not-started'?'selected':''}>Not Started</option>
+      <option value="on-track" ${g.status==='on-track'?'selected':''}>On Track</option>
+      <option value="at-risk" ${g.status==='at-risk'?'selected':''}>At Risk</option>
+      <option value="off-track" ${g.status==='off-track'?'selected':''}>Off Track</option>
+      <option value="complete" ${g.status==='complete'?'selected':''}>Complete</option></select></div>
+    <div class="row" style="gap:8px;justify-content:flex-end;margin-top:14px;">
+      <button class="btn bg" onclick="closeModal()">Cancel</button>
+      <button class="btn bp" onclick="updateQGoal('${qId}','${gId}')">Update</button></div>`);}
+
+function updateQGoal(qId,gId){const q=getQuarterly();const qr=q.quarters.find(x=>x.id===qId);
+  const g=qr?.goals?.find(x=>x.id===gId);if(!g)return;
+  g.current=parseFloat(document.getElementById('m-u-c').value)||0;g.status=document.getElementById('m-u-s').value;
+  save(K.quarterly,q);SUPA.push('quarterly','singleton',q);closeModal();renderQuarterly();showToast('✅ Updated!','success');}
+
+function delQGoal(qId,gId){const q=getQuarterly();const qr=q.quarters.find(x=>x.id===qId);
+  if(qr)qr.goals=(qr.goals||[]).filter(g=>g.id!==gId);
+  save(K.quarterly,q);SUPA.push('quarterly','singleton',q);renderQuarterly();}
+
+// ═══════════════════════════════════════════════════════════
+// DAILY GOALS
+// ═══════════════════════════════════════════════════════════
+function renderDaily(){const di=document.getElementById('daily-date');if(!di.value)di.value=todayStr();loadDailyGoals();}
+function loadDailyGoals(){const d=document.getElementById('daily-date').value;const daily=getDaily();const dd=daily[d]||{goals:[]};const goals=dd.goals||[];
+  document.getElementById('daily-container').innerHTML=`<div class="card">
+    <div class="sh"><div class="st">Goals for ${fmtDate(d)}</div></div>
+    ${goals.length?goals.map(g=>`<div class="ti">
+      <div class="cb ${g.done?'chk':''}" onclick="toggleDailyGoal('${g.id}')"></div>
+      <div class="tt ${g.done?'done':''}" style="flex:1;">${esc(g.title)}</div>
+      ${g.aiGenerated?'<span class="badge b-b" style="font-size:9px;">AI</span>':''}
+      <button onclick="delDailyGoal('${g.id}')" style="background:none;border:none;cursor:pointer;color:var(--t4);font-size:11px;padding:2px 5px;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--t4)'">✕</button>
+      </div>`).join('')
+    :`<div class="es" style="padding:20px 0;"><h4>No goals for this day</h4><p>Click AI Suggest or add manually</p></div>`}
+    </div>
+    ${dd.aiGenerated?`<div class="ais"><h4>✦ AI Generated at ${dd.generatedAt||'—'}</h4><p style="font-size:11px;color:var(--t3);">Based on your active quarterly goals.</p></div>`:'`}`}`;}
+
+function toggleDailyGoal(id){const d=document.getElementById('daily-date').value;const daily=getDaily();if(!daily[d])return;
+  const g=daily[d].goals.find(g=>g.id===id);if(g){g.done=!g.done;save(K.daily,daily);SUPA.push('daily',d,daily[d]);loadDailyGoals();}}
+
+function delDailyGoal(id){const d=document.getElementById('daily-date').value;const daily=getDaily();if(!daily[d])return;
+  daily[d].goals=daily[d].goals.filter(g=>g.id!==id);save(K.daily,daily);SUPA.push('daily',d,daily[d]);loadDailyGoals();}
+
+function openAddDailyGoal(){showModal('Add Daily Goal',`
+  <div class="field"><label>Goal</label><input type="text" id="m-dg-t" placeholder="e.g. Follow up with 3 leads"></div>
+  <div class="row" style="gap:8px;justify-content:flex-end;margin-top:14px;">
+    <button class="btn bg" onclick="closeModal()">Cancel</button>
+    <button class="btn bp" onclick="saveDailyGoal()">Add</button></div>`);
+  setTimeout(()=>document.getElementById('m-dg-t')?.focus(),100);}
+
+function saveDailyGoal(){const title=document.getElementById('m-dg-t').value.trim();if(!title)return;
+  const d=document.getElementById('daily-date').value;const daily=getDaily();if(!daily[d])daily[d]={goals:[]};
+  daily[d].goals.push({id:genId(),title,done:false,aiGenerated:false});
+  save(K.daily,daily);SUPA.push('daily',d,daily[d]);closeModal();loadDailyGoals();}
+
+async function generateDailyGoals(){const s=getSettings();
+  if(!s.apiKey){showToast('⚠️ Add API key in Settings','nudge');navigate('settings');return;}
+  const curQ=currentQuarter();if(!curQ?.goals?.length){showToast('⚠️ No quarterly goals found','nudge');return;}
+  const d=document.getElementById('daily-date').value;const annual=getAnnual();
+  document.getElementById('daily-container').innerHTML=`<div class="card" style="text-align:center;padding:36px;"><div class="spin" style="margin:0 auto 12px;"></div><div style="color:var(--t3);font-size:12px;">✦ Generating your daily goals…</div></div>`;
+  try{const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':s.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,messages:[{role:'user',content:
+        `Generate 4-6 specific actionable daily goals for ${d}.\nVision: ${annual.vision||'—'}\nTheme: ${annual.theme||'—'}\nQuarterly Goals:\n${curQ.goals.map(g=>`- ${g.title}: ${g.current||0}/${g.target||'?'} ${g.unit||''} (${g.status})`).join('\n')}\nReturn ONLY a JSON array of strings.`}]})});
+    const data=await resp.json();if(data.error)throw new Error(data.error.message);
+    const goals=JSON.parse(data.content[0].text.trim().replace(/```json|```/g,'').trim());
+    const daily=getDaily();if(!daily[d])daily[d]={goals:[]};
+    daily[d].goals=[...daily[d].goals.filter(g=>!g.aiGenerated),...goals.map(title=>({id:genId(),title,done:false,aiGenerated:true}))];
+    daily[d].aiGenerated=true;daily[d].generatedAt=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    save(K.daily,daily);SUPA.push('daily',d,daily[d]);loadDailyGoals();showToast('✅ Daily goals generated!','success');
+  }catch(e){document.getElementById('daily-container').innerHTML=`<div class="card"><p style="color:var(--red);font-size:12px;">Error: ${esc(e.message)}</p></div>`;}}
+
+// ═══════════════════════════════════════════════════════════
+// TO-DO LIST
+// ═══════════════════════════════════════════════════════════
+function renderTodo(){const di=document.getElementById('todo-date');if(!di.value)di.value=todayStr();updateRemStatus();loadTodos();}
+function loadTodos(){const d=document.getElementById('todo-date').value;const todos=getTodos()[d]||[];
+  const done=todos.filter(t=>t.done).length;const rem=todos.length-done;
+  document.getElementById('todo-list').innerHTML=todos.length
+    ?todos.map(t=>`<div class="ti"><div class="cb ${t.done?'chk':''}" onclick="toggleTodo('${t.id}')"></div>
+      <div class="tt ${t.done?'done':''}" style="flex:1;">${esc(t.title)}</div>
+      <button onclick="deleteTodo('${t.id}')" style="background:none;border:none;cursor:pointer;color:var(--t4);font-size:11px;padding:2px 5px;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--t4)'">✕</button></div>`).join('')
+    :`<div class="es" style="padding:16px 0;"><p>No tasks yet — add one above!</p></div>`;
+  document.getElementById('todo-stats').innerHTML=`<div class="row" style="gap:20px;align-items:flex-start;">
+    <div><div class="sl">Total</div><div style="font-size:20px;font-weight:700;">${todos.length}</div></div>
+    <div><div class="sl">Done</div><div style="font-size:20px;font-weight:700;color:var(--green);">${done}</div></div>
+    <div><div class="sl">Left</div><div style="font-size:20px;font-weight:700;color:${rem>0?'var(--amber)':'var(--t4)'};">${rem}</div></div>
+    <div style="flex:1;"><div class="sl" style="margin-bottom:5px;">Progress</div>
+    <div class="pb" style="height:7px;"><div class="pf" style="width:${todos.length?Math.round(done/todos.length*100):0}%;background:var(--green);"></div></div>
+    <div style="font-size:10px;color:var(--t4);margin-top:3px;">${todos.length?Math.round(done/todos.length*100):0}%</div></div></div>`;}
+
+function addTodo(){const inp=document.getElementById('todo-input');const title=inp.value.trim();if(!title)return;
+  const d=document.getElementById('todo-date').value;const todos=getTodos();if(!todos[d])todos[d]=[];
+  todos[d].push({id:genId(),title,done:false,createdAt:new Date().toISOString()});
+  save(K.todos,todos);SUPA.push('todos',d,todos[d]);inp.value='';loadTodos();}
+
+function toggleTodo(id){const d=document.getElementById('todo-date').value;const todos=getTodos();
+  const t=todos[d]?.find(t=>t.id===id);if(t){t.done=!t.done;save(K.todos,todos);SUPA.push('todos',d,todos[d]);loadTodos();}}
+
+function deleteTodo(id){const d=document.getElementById('todo-date').value;const todos=getTodos();
+  if(todos[d]){todos[d]=todos[d].filter(t=>t.id!==id);save(K.todos,todos);SUPA.push('todos',d,todos[d]);loadTodos();}}
+
+function updateRemStatus(){const p=Notification.permission;
+  document.getElementById('rem-status').textContent=p==='granted'?'🔔 On':p==='denied'?'🔕 Blocked':'🔕 Off';}
+async function enableReminders(){const p=await Notification.requestPermission();updateRemStatus();
+  showToast(p==='granted'?'✅ Reminders enabled — 1:30 PM & 4:00 PM':'⚠️ Allow notifications in browser settings',p==='granted'?'success':'nudge');}
+
+// ═══════════════════════════════════════════════════════════
+// CONVERSATIONS
+// ═══════════════════════════════════════════════════════════
+let _vc=null;
+function renderConversations(){
+  const search=(document.getElementById('conv-search')?.value||'').toLowerCase();
+  const filter=document.getElementById('conv-filter')?.value||'';
+  let convs=getConvs().filter(c=>{
+    const ms=!search||c.title.toLowerCase().includes(search)||(c.notes||'').toLowerCase().includes(search)||(c.participants||[]).join(' ').toLowerCase().includes(search);
+    return ms&&(!filter||c.type===filter);}).reverse();
+  document.getElementById('conv-list').innerHTML=convs.length?convs.map(c=>`
+    <div class="cc" onclick="viewConv('${c.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div><div style="font-size:14px;font-weight:600;">${esc(c.title)}</div>
+        <div style="font-size:10px;color:var(--t4);margin-top:2px;">${c.date} · <span class="badge b-b" style="font-size:9px;">${c.type||'general'}</span>${c.participants?.length?' · '+c.participants.map(esc).join(', '):''}</div></div>
+        <div style="text-align:right;flex-shrink:0;margin-left:10px;">
+        <div style="font-size:10px;color:var(--t4);">${(c.actionPoints||[]).length} actions</div>
+        ${c.insights?'<div style="font-size:9px;color:var(--accent);margin-top:2px;">✦ insights</div>':''}</div>
+      </div>
+      <div style="font-size:12px;color:var(--t3);margin-top:5px;line-height:1.5;">${esc((c.notes||'').slice(0,120))}${(c.notes||'').length>120?'…':''}</div>
+      ${(c.tags||[]).length?`<div style="margin-top:6px;">${c.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>`:''}
+    </div>`).join(''):
+    `<div class="es"><h4>No conversations</h4><p>Click "+ New" to log your first conversation</p></div>`;}
+
+function viewConv(id){const convs=getConvs();const c=convs.find(x=>x.id===id);if(!c)return;
+  _vc=id;document.getElementById('conv-list-view').style.display='none';
+  const det=document.getElementById('conv-detail');det.style.display='block';
+  const linked=convs.filter(x=>(c.linkedConvIds||[]).includes(x.id));
+  det.innerHTML=`<div class="row" style="justify-content:space-between;margin-bottom:18px;">
+    <button class="btn bg bsm" onclick="closeConvDetail()">← Back</button>
+    <div class="row" style="gap:6px;"><button class="btn bai bsm" onclick="genInsights('${id}')">✦ AI Insights</button>
+    <button class="btn bg bsm" onclick="openEditConv('${id}')">Edit</button>
+    <button class="btn bd bsm" onclick="delConv('${id}')">Delete</button></div></div>
+  <div class="card"><h3 style="font-size:17px;font-weight:700;margin-bottom:6px;">${esc(c.title)}</h3>
+    <div style="font-size:11px;color:var(--t4);margin-bottom:12px;">${c.date} · <span class="badge b-b">${c.type||'general'}</span> · ${(c.participants||[]).map(esc).join(', ')}</div>
+    ${(c.tags||[]).length?`<div style="margin-bottom:10px;">${c.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>`:''}
+    <div style="font-size:13px;color:var(--t2);line-height:1.7;white-space:pre-wrap;">${esc(c.notes||'')}</div></div>
+  ${c.insights?`<div class="ais"><h4>✦ AI Insights</h4><div style="font-size:12px;color:var(--t2);line-height:1.6;white-space:pre-wrap;">${esc(c.insights)}</div></div>`:''}
+  <div class="card"><div class="sh"><div class="st">Action Points</div><button class="btn bg bsm" onclick="openAddAP('${id}')">+ Add</button></div>
+  <div id="ap-list">${renderAPs(c)}</div></div>
+  <div class="card"><div class="sh"><div class="st">Linked Conversations</div><button class="btn bg bsm" onclick="openLinkConv('${id}')">+ Link</button></div>
+  ${linked.length?linked.map(lc=>`<div class="ti"><span>💬</span><div style="flex:1;"><div style="font-size:12px;font-weight:500;">${esc(lc.title)}</div><div style="font-size:10px;color:var(--t4);">${lc.date}</div></div>
+    <button class="btn bg bsm" onclick="viewConv('${lc.id}')">View</button>
+    <button onclick="unlinkConv('${id}','${lc.id}')" style="background:none;border:none;cursor:pointer;color:var(--t4);font-size:11px;margin-left:4px;">✕</button></div>`).join('')
+    :`<div style="font-size:12px;color:var(--t4);">No linked conversations</div>`}</div>`;}
+
+function renderAPs(c){const aps=c.actionPoints||[];if(!aps.length)return`<div style="font-size:12px;color:var(--t4);">No action points yet</div>`;
+  return aps.map(ap=>`<div class="ti"><div class="cb ${ap.done?'chk':''}" onclick="toggleAP('${c.id}','${ap.id}')"></div>
+    <div style="flex:1;"><div class="tt ${ap.done?'done':''}" style="font-size:12.5px;">${esc(ap.text)}</div>
+    ${ap.syncedToTodo?`<div style="font-size:9px;color:var(--green);">✓ In Today's To-Do</div>`:''}</div>
+    ${!ap.syncedToTodo?`<button class="btn bg bsm" onclick="syncAP('${c.id}','${ap.id}')" title="Add to today's to-do">📋</button>`:''}
+    <button onclick="delAP('${c.id}','${ap.id}')" style="background:none;border:none;cursor:pointer;color:var(--t4);font-size:11px;margin-left:4px;">✕</button></div>`).join('');}
+
+function closeConvDetail(){_vc=null;document.getElementById('conv-detail').style.display='none';document.getElementById('conv-list-view').style.display='block';renderConversations();}
+function openNewConvModal(){showModal('New Conversation',`
+  <div class="field"><label>Title *</label><input type="text" id="m-cv-t" placeholder="e.g. Q2 Strategy Review with Priya"></div>
+  <div class="g2"><div class="field"><label>Date</label><input type="date" id="m-cv-d" value="${todayStr()}"></div>
+  <div class="field"><label>Type</label><select id="m-cv-ty"><option value="work">Work Meeting</option><option value="client">Client Call</option><option value="personal">Personal</option><option value="other">Other</option></select></div></div>
+  <div class="field"><label>Participants (comma-separated)</label><input type="text" id="m-cv-p" placeholder="Priya, Rahul"></div>
+  <div class="field"><label>Tags (comma-separated)</label><input type="text" id="m-cv-tg" placeholder="strategy, Q2"></div>
+  <div class="field"><label>Notes</label><textarea id="m-cv-n" style="min-height:100px;" placeholder="Key points discussed…"></textarea></div>
+  <div class="row" style="gap:8px;justify-content:flex-end;margin-top:14px;"><button class="btn bg" onclick="closeModal()">Cancel</button><button class="btn bp" onclick="saveNewConv()">Save & Open</button></div>`);}
+
+function saveNewConv(){const title=document.getElementById('m-cv-t').value.trim();if(!title){showToast('Enter a title','error');return;}
+  const convs=getConvs();const c={id:genId(),title,date:document.getElementById('m-cv-d').value,type:document.getElementById('m-cv-ty').value,
+    participants:document.getElementById('m-cv-p').value.split(',').map(s=>s.trim()).filter(Boolean),
+    tags:document.getElementById('m-cv-tg').value.split(',').map(s=>s.trim()).filter(Boolean),
+    notes:document.getElementById('m-cv-n').value.trim(),insights:'',actionPoints:[],linkedConvIds:[]};
+  convs.push(c);save(K.convs,convs);SUPA.push('conversations',c.id,c);closeModal();viewConv(c.id);showToast('✅ Saved!','success');}
+
+function openEditConv(id){const c=getConvs().find(x=>x.id===id);if(!c)return;
+  showModal('Edit Conversation',`
+    <div class="field"><label>Title</label><input type="text" id="m-cv-t" value="${esc(c.title)}"></div>
+    <div class="g2"><div class="field"><label>Date</label><input type="date" id="m-cv-d" value="${c.date}"></div>
+    <div class="field"><label>Type</label><select id="m-cv-ty"><option value="work" ${c.type==='work'?'selected':''}>Work Meeting</option>
+    <option value="client" ${c.type==='client'?'selected':''}>Client Call</option><option value="personal" ${c.type==='personal'?'selected':''}>Personal</option>
+    <option value="other" ${c.type==='other'?'selected':''}>Other</option></select></div></div>
+    <div class="field"><label>Participants</label><input type="text" id="m-cv-p" value="${esc((c.participants||[]).join(', '))}"></div>
+    <div class="field"><label>Tags</label><input type="text" id="m-cv-tg" value="${esc((c.tags||[]).join(', '))}"></div>
+    <div class="field"><label>Notes</label><textarea id="m-cv-n" style="min-height:100px;">${esc(c.notes||'')}</textarea></div>
+    <div class="row" style="gap:8px;justify-content:flex-end;margin-top:14px;"><button class="btn bg" onclick="closeModal()">Cancel</button><button class="btn bp" onclick="updateConv('${id}')">Save</button></div>`);}
+
+function updateConv(id){const convs=getConvs();const c=convs.find(x=>x.id===id);if(!c)return;
+  c.title=document.getElementById('m-cv-t').value.trim();c.date=document.getElementById('m-cv-d').value;
+  c.type=document.getElementById('m-cv-ty').value;
+  c.participants=document.getElementById('m-cv-p').value.split(',').map(s=>s.trim()).filter(Boolean);
+  c.tags=document.getElementById('m-cv-tg').value.split(',').map(s=>s.trim()).filter(Boolean);
+  c.notes=document.getElementById('m-cv-n').value.trim();
+  save(K.convs,convs);SUPA.push('conversations',id,c);closeModal();viewConv(id);showToast('✅ Updated!','success');}
+
+function delConv(id){if(!confirm('Delete this conversation?'))return;save(K.convs,getConvs().filter(c=>c.id!==id));SUPA.del('conversations',id);closeConvDetail();showToast('🗑 Deleted','success');}
+
+function openAddAP(convId){showModal('Add Action Point',`
+  <div class="field"><label>Action *</label><input type="text" id="m-ap-t" placeholder="e.g. Send proposal by Friday"></div>
+  <div class="row" style="gap:8px;justify-content:flex-end;margin-top:14px;"><button class="btn bg" onclick="closeModal()">Cancel</button><button class="btn bp" onclick="saveAP('${convId}')">Add</button></div>`);}
+
+function saveAP(convId){const text=document.getElementById('m-ap-t').value.trim();if(!text)return;
+  const convs=getConvs();const c=convs.find(x=>x.id===convId);if(!c)return;if(!c.actionPoints)c.actionPoints=[];
+  c.actionPoints.push({id:genId(),text,done:false,syncedToTodo:false});
+  save(K.convs,convs);SUPA.push('conversations',convId,c);closeModal();document.getElementById('ap-list').innerHTML=renderAPs(c);}
+
+function toggleAP(convId,apId){const convs=getConvs();const c=convs.find(x=>x.id===convId);
+  const ap=c?.actionPoints?.find(a=>a.id===apId);if(ap){ap.done=!ap.done;save(K.convs,convs);SUPA.push('conversations',convId,c);document.getElementById('ap-list').innerHTML=renderAPs(c);}}
+
+function delAP(convId,apId){const convs=getConvs();const c=convs.find(x=>x.id===convId);
+  if(c){c.actionPoints=(c.actionPoints||[]).filter(a=>a.id!==apId);save(K.convs,convs);SUPA.push('conversations',convId,c);document.getElementById('ap-list').innerHTML=renderAPs(c);}}
+
+function syncAP(convId,apId){const convs=getConvs();const c=convs.find(x=>x.id===convId);
+  const ap=c?.actionPoints?.find(a=>a.id===apId);if(!ap)return;
+  const todos=getTodos();const t=todayStr();if(!todos[t])todos[t]=[];
+  todos[t].push({id:genId(),title:`[${c.title}] ${ap.text}`,done:false,createdAt:new Date().toISOString()});
+  save(K.todos,todos);SUPA.push('todos',t,todos[t]);ap.syncedToTodo=true;save(K.convs,convs);SUPA.push('conversations',convId,c);
+  document.getElementById('ap-list').innerHTML=renderAPs(c);showToast('✅ Added to Today\'s To-Do!','success');}
+
+function openLinkConv(convId){const convs=getConvs();const c=convs.find(x=>x.id===convId);
+  const others=convs.filter(x=>x.id!==convId&&!(c.linkedConvIds||[]).includes(x.id));
+  showModal('Link Conversation',`<div class="field"><label>Select conversation</label>
+    <select id="m-lc" style="width:100%;"><option value="">-- Select --</option>
+    ${others.map(x=>`<option value="${x.id}">${x.date} · ${esc(x.title)}</option>`).join('')}</select></div>
+    <div class="row" style="gap:8px;justify-content:flex-end;margin-top:14px;"><button class="btn bg" onclick="closeModal()">Cancel</button><button class="btn bp" onclick="doLinkConv('${convId}')">Link</button></div>`);}
+
+function doLinkConv(convId){const lid=document.getElementById('m-lc').value;if(!lid)return;
+  const convs=getConvs();const c=convs.find(x=>x.id===convId);const o=convs.find(x=>x.id===lid);
+  if(c&&o){if(!c.linkedConvIds)c.linkedConvIds=[];if(!c.linkedConvIds.includes(lid))c.linkedConvIds.push(lid);
+    if(!o.linkedConvIds)o.linkedConvIds=[];if(!o.linkedConvIds.includes(convId))o.linkedConvIds.push(convId);
+    save(K.convs,convs);SUPA.push('conversations',convId,c);SUPA.push('conversations',lid,o);}
+  closeModal();viewConv(convId);showToast('✅ Linked!','success');}
+
+function unlinkConv(convId,lid){const convs=getConvs();const c=convs.find(x=>x.id===convId);
+  if(c){c.linkedConvIds=(c.linkedConvIds||[]).filter(id=>id!==lid);}
+  save(K.convs,convs);SUPA.push('conversations',convId,c);viewConv(convId);}
+
+async function genInsights(convId){const s=getSettings();if(!s.apiKey){showToast('⚠️ Add API key in Settings','nudge');return;}
+  const convs=getConvs();const c=convs.find(x=>x.id===convId);if(!c?.notes){showToast('⚠️ No notes to analyze','nudge');return;}
+  const linked=convs.filter(x=>(c.linkedConvIds||[]).includes(x.id));showToast('✦ Generating…','success');
+  try{const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':s.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:
+        `Analyze: "${c.title}" (${c.date}, ${c.type})\nParticipants: ${(c.participants||[]).join(', ')}\nNotes:\n${c.notes}\n${linked.length?'Related:\n'+linked.map(lc=>`- "${lc.title}": ${(lc.notes||'').slice(0,150)}`).join('\n'):''}\nProvide: key themes, decisions, connections, follow-ups, risks. Plain text only.`}]})});
+    const data=await resp.json();if(data.error)throw new Error(data.error.message);
+    c.insights=data.content[0].text.trim();save(K.convs,convs);SUPA.push('conversations',convId,c);viewConv(convId);showToast('✅ Insights ready!','success');
+  }catch(e){showToast('❌ '+e.message,'error');}}
+
+// ═══════════════════════════════════════════════════════════
+// PROJECTS
+// ═══════════════════════════════════════════════════════════
+const PROJ_STATUS={
+  'not-started':{label:'Not Started',cls:'b-gr'},
+  'in-progress':{label:'In Progress',cls:'b-a'},
+  'completed':{label:'Completed',cls:'b-g'},
+  'on-hold':{label:'On Hold',cls:'b-bl'},
+  'cancelled':{label:'Cancelled',cls:'b-r'}};
+
+function renderProjects(){const projs=getProjects();
+  document.getElementById('projects-list').innerHTML=projs.length?projs.map(p=>{const s=PROJ_STATUS[p.status]||PROJ_STATUS['not-started'];
+    return`<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+        <div style="flex:1;"><h3 style="font-size:15px;font-weight:600;margin-bottom:4px;">${esc(p.title)}</h3>
+          <div style="font-size:11px;color:var(--t4);">Start: ${fmtDate(p.startDate)} &nbsp;→&nbsp; End: ${fmtDate(p.endDate)}</div></div>
+        <div class="row" style="gap:5px;flex-shrink:0;">
+          <span class="badge ${s.cls}">${s.label}</span>
+          <button class="btn bg bsm" onclick="openEditProject('${p.id}')">Edit</button>
+          <button class="btn bd bsm" onclick="delProject('${p.id}')">✕</button>
+        </div>
+      </div>
+      ${p.blockers?`<div style="margin-top:10px;padding:8px 10px;background:var(--rl);border-radius:var(--rs);"><div style="font-size:10px;font-weight:700;color:var(--red);margin-bottom:2px;">BLOCKERS</div><div style="font-size:12px;color:var(--t2);">${esc(p.blockers)}</div></div>`:''}
+      ${p.remarks?`<div style="margin-top:8px;font-size:12px;color:var(--t3);"><strong style="color:var(--t4);">Remarks:</strong> ${esc(p.remarks)}</div>`:''}
+    </div>`;}).join('')
+    :`<div class="es"><h4>No projects yet</h4><p>Click "+ New Project" to add your first project</p></div>`;}
+
+function openAddProject(prefill){const p=prefill||{};showModal((p.id?'Edit':'New')+' Project',`
+  <div class="field"><label>Project Title *</label><input type="text" id="m-pt" value="${esc(p.title||'')}" placeholder="e.g. State Expansion Q3"></div>
+  <div class="g2"><div class="field"><label>Start Date</label><input type="date" id="m-ps" value="${p.startDate||''}"></div>
+  <div class="field"><label>End Date</label><input type="date" id="m-pe" value="${p.endDate||''}"></div></div>
+  <div class="field"><label>Status</label><select id="m-pst">
+    <option value="not-started" ${(!p.status||p.status==='not-started')?'selected':''}>Not Started</option>
+    <option value="in-progress" ${p.status==='in-progress'?'selected':''}>In Progress</option>
+    <option value="completed" ${p.status==='completed'?'selected':''}>Completed</option>
+    <option value="on-hold" ${p.status==='on-hold'?'selected':''}>On Hold</option>
+    <option value="cancelled" ${p.status==='cancelled'?'selected':''}>Cancelled</option></select></div>
+  <div class="field"><label>Blockers</label><textarea id="m-pb" style="min-height:60px;" placeholder="Any blockers or dependencies…">${esc(p.blockers||'')}</textarea></div>
+  <div class="field"><label>Remarks</label><textarea id="m-pr" style="min-height:60px;" placeholder="Notes, updates, context…">${esc(p.remarks||'')}</textarea></div>
+  <input type="hidden" id="m-pid" value="${p.id||''}">
+  <div class="row" style="gap:8px;justify-content:flex-end;margin-top:14px;"><button class="btn bg" onclick="closeModal()">Cancel</button><button class="btn bp" onclick="saveProject()">Save</button></div>`);}
+
+function saveProject(){const title=document.getElementById('m-pt').value.trim();if(!title){showToast('Enter a project title','error');return;}
+  const projs=getProjects();const id=document.getElementById('m-pid').value;
+  const obj={id:id||genId(),title,startDate:document.getElementById('m-ps').value,endDate:document.getElementById('m-pe').value,
+    status:document.getElementById('m-pst').value,blockers:document.getElementById('m-pb').value.trim(),
+    remarks:document.getElementById('m-pr').value.trim(),createdAt:id?undefined:new Date().toISOString()};
+  if(id){const i=projs.findIndex(p=>p.id===id);if(i>=0)projs[i]=obj;}else projs.push(obj);
+  save(K.projects,projs);SUPA.push('projects',obj.id,obj);closeModal();renderProjects();showToast('✅ Project saved!','success');}
+
+function openEditProject(id){const p=getProjects().find(p=>p.id===id);if(p)openAddProject(p);}
+
+function delProject(id){if(!confirm('Delete this project?'))return;
+  save(K.projects,getProjects().filter(p=>p.id!==id));SUPA.del('projects',id);renderProjects();showToast('🗑 Deleted','success');}
+
+// GANTT CHART
+function renderGanttPage(){
+  const projs=getProjects().filter(p=>p.startDate&&p.endDate);
+  if(!projs.length){document.getElementById('gantt-container').innerHTML=`<div class="es" style="padding:40px;"><h4>No projects with dates</h4><p>Add start and end dates to your projects to see the Gantt chart</p></div>`;return;}
+
+  const dates=projs.flatMap(p=>[new Date(p.startDate),new Date(p.endDate)]);
+  let minD=new Date(Math.min(...dates));let maxD=new Date(Math.max(...dates));
+  // Pad by 7 days each side
+  minD=new Date(minD.getTime()-7*864e5);maxD=new Date(maxD.getTime()+7*864e5);
+  const totalDays=(maxD-minD)/864e5;
+
+  const LABEL_W=180,ROW_H=44,HEADER_H=48,W=Math.max(800,LABEL_W+totalDays*14),H=HEADER_H+projs.length*ROW_H+20;
+
+  const statusColors={'not-started':'#64748b','in-progress':'#f59e0b','completed':'#10b981','on-hold':'#3b82f6','cancelled':'#ef4444'};
+
+  // Month grid lines
+  const months=[];let md=new Date(minD.getFullYear(),minD.getMonth(),1);
+  while(md<=maxD){const x=LABEL_W+((md-minD)/864e5)/totalDays*(W-LABEL_W);
+    months.push({x,label:md.toLocaleDateString('en-IN',{month:'short',year:'2-digit'})});md.setMonth(md.getMonth()+1);}
+
+  const rows=projs.map((p,i)=>{const y=HEADER_H+i*ROW_H;
+    const sx=LABEL_W+Math.max(0,(new Date(p.startDate)-minD)/864e5/totalDays*(W-LABEL_W));
+    const ex=LABEL_W+Math.min(W-LABEL_W,(new Date(p.endDate)-minD)/864e5/totalDays*(W-LABEL_W));
+    const bw=Math.max(6,ex-sx);const col=statusColors[p.status]||'#64748b';
+    return`<rect x="0" y="${y}" width="${W}" height="${ROW_H}" fill="${i%2===0?'#111827':'#0d1424'}"/>
+      <text x="8" y="${y+27}" fill="#94a3b8" font-size="11" font-family="Outfit,sans-serif">${p.title.length>22?p.title.slice(0,22)+'…':p.title}</text>
+      <rect x="${sx}" y="${y+8}" width="${bw}" height="${ROW_H-16}" rx="4" fill="${col}" opacity="0.88"/>
+      ${bw>40?`<text x="${sx+bw/2}" y="${y+23}" text-anchor="middle" fill="white" font-size="9" font-family="Outfit,sans-serif">${fmtShort(p.startDate)}–${fmtShort(p.endDate)}</text>`:''}`;});
+
+  const todayX=LABEL_W+((new Date()-minD)/864e5)/totalDays*(W-LABEL_W);
+  const svg=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+    <rect width="${W}" height="${H}" fill="#0a0e1a"/>
+    <rect width="${W}" height="${HEADER_H}" fill="#1f2937"/>
+    <text x="8" y="30" fill="#94a3b8" font-size="11" font-weight="700" font-family="Outfit,sans-serif">PROJECT</text>
+    ${months.map(m=>`<line x1="${m.x}" y1="0" x2="${m.x}" y2="${H}" stroke="#1f2937" stroke-width="1"/>
+      <text x="${m.x+4}" y="30" fill="#64748b" font-size="10" font-family="Outfit,sans-serif">${m.label}</text>`).join('')}
+    ${rows.join('')}
+    ${todayX>LABEL_W&&todayX<W?`<line x1="${todayX}" y1="0" x2="${todayX}" y2="${H}" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <text x="${todayX+3}" y="14" fill="#ef4444" font-size="9" font-family="Outfit,sans-serif">TODAY</text>`:''}
+    <rect width="${W}" height="${H}" fill="none" stroke="#1f2937" stroke-width="1"/>
+  </svg>`;
+  document.getElementById('gantt-container').innerHTML=`<div class="gantt-wrap">${svg}</div>`;}
+
+// EXCEL EXPORT — PROJECTS
+function exportProjectsExcel(){const projs=getProjects();
+  if(!projs.length){showToast('No projects to export','nudge');return;}
+  const data=projs.map((p,i)=>({'S.No':i+1,'Project Title':p.title,'Start Date':p.startDate,'End Date':p.endDate,
+    'Status':(PROJ_STATUS[p.status]||{label:p.status}).label,'Blockers':p.blockers||'','Remarks':p.remarks||'',
+    'Duration (days)':p.startDate&&p.endDate?Math.round((new Date(p.endDate)-new Date(p.startDate))/864e5):''  }));
+  const ws=XLSX.utils.json_to_sheet(data);
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Projects');
+  ws['!cols']=[{wch:5},{wch:30},{wch:12},{wch:12},{wch:14},{wch:40},{wch:40},{wch:12}];
+  XLSX.writeFile(wb,`Projects_Report_${todayStr()}.xlsx`);showToast('✅ Excel downloaded!','success');}
+
+// ═══════════════════════════════════════════════════════════
+// OUTREACH TRACKER
+// ═══════════════════════════════════════════════════════════
+const ENG_STATUS={
+  'completed':{label:'Completed',cls:'eng-completed'},
+  'in-progress':{label:'In Progress',cls:'eng-in-progress'},
+  'no-movement':{label:'No Movement',cls:'eng-no-movement'},
+  'cancelled':{label:'Cancelled',cls:'eng-cancelled'}};
+
+function renderOutreach(){
+  const search=(document.getElementById('out-search')?.value||'').toLowerCase();
+  const stateFilter=document.getElementById('out-state-filter')?.value||'';
+  let items=getOutreach().filter(o=>{
+    const ms=!search||o.name?.toLowerCase().includes(search)||o.pocName?.toLowerCase().includes(search)||o.district?.toLowerCase().includes(search)||o.state?.toLowerCase().includes(search);
+    return ms&&(!stateFilter||o.state===stateFilter);}).reverse();
+
+  // Update state filter options
+  const states=[...new Set(getOutreach().map(o=>o.state).filter(Boolean))].sort();
+  const sf=document.getElementById('out-state-filter');
+  if(sf){const cur=sf.value;sf.innerHTML=`<option value="">All States</option>`+states.map(s=>`<option value="${esc(s)}" ${s===cur?'selected':''}>${esc(s)}</option>`).join('');}
+
+  document.getElementById('out-list').innerHTML=items.length?items.map(o=>{
+    const engs=o.engagements||[];
+    return`<div class="card" style="cursor:pointer;" onclick="viewOutreach('${o.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:600;">${esc(o.name||'')}</div>
+          <div style="font-size:10px;color:var(--t4);margin-top:2px;">
+            <span class="badge b-gr">S.No ${o.serialNo||'—'}</span>&nbsp;
+            ${esc(o.district||'')}${o.state?', '+esc(o.state):''} · PoC: ${esc(o.pocName||'')}
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:10px;color:var(--t4);">${engs.length} engagement${engs.length!==1?'s':''}</div>
+          <div style="font-size:10px;color:var(--t3);">Est. ${o.estStudents||'?'} students</div>
+        </div>
+      </div>
+      ${engs.length?`<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:5px;">${engs.map(e=>{const es=ENG_STATUS[e.status]||{label:e.status,cls:''};
+        return`<span class="${es.cls}" style="font-size:11px;border:1px solid currentColor;padding:2px 8px;border-radius:99px;">${esc(e.description||'Engagement')} — ${es.label}</span>`;}).join('')}</div>`:''}
+    </div>`}).join('')
+    :`<div class="es"><h4>No outreach entries</h4><p>Click "+ New Entry" to add your first outreach record</p></div>`;}
+
+function viewOutreach(id){const items=getOutreach();const o=items.find(x=>x.id===id);if(!o)return;
+  document.getElementById('out-list-view').style.display='none';
+  const det=document.getElementById('out-detail');det.style.display='block';
+  det.innerHTML=`<div class="row" style="justify-content:space-between;margin-bottom:16px;">
+    <button class="btn bg bsm" onclick="closeOutDetail()">← Back</button>
+    <div class="row" style="gap:6px;">
+      <button class="btn bg bsm" onclick="openEditOutreach('${id}')">Edit</button>
+      <button class="btn bd bsm" onclick="delOutreach('${id}')">Delete</button>
+    </div></div>
+  <div class="card">
+    <h3 style="font-size:16px;font-weight:700;margin-bottom:10px;">${esc(o.name||'')} <span class="badge b-gr">S.No ${o.serialNo||'—'}</span></h3>
+    <div class="g2" style="gap:8px;">
+      <div><div style="font-size:10px;color:var(--t4);margin-bottom:2px;">PoC NAME</div><div style="font-size:13px;">${esc(o.pocName||'—')}</div></div>
+      <div><div style="font-size:10px;color:var(--t4);margin-bottom:2px;">DESIGNATION</div><div style="font-size:13px;">${esc(o.designation||'—')}</div></div>
+      <div><div style="font-size:10px;color:var(--t4);margin-bottom:2px;">EMAIL</div><div style="font-size:13px;">${esc(o.email||'—')}</div></div>
+      <div><div style="font-size:10px;color:var(--t4);margin-bottom:2px;">CONTACT</div><div style="font-size:13px;">${esc(o.contactNumber||'—')}</div></div>
+      <div><div style="font-size:10px;color:var(--t4);margin-bottom:2px;">DISTRICT</div><div style="font-size:13px;">${esc(o.district||'—')}</div></div>
+      <div><div style="font-size:10px;color:var(--t4);margin-bottom:2px;">STATE</div><div style="font-size:13px;">${esc(o.state||'—')}</div></div>
+      <div><div style="font-size:10px;color:var(--t4);margin-bottom:2px;">NO. OF STUDENTS</div><div style="font-size:13px;">${o.numberOfStudents||'—'}</div></div>
+      <div><div style="font-size:10px;color:var(--t4);margin-bottom:2px;">EST. STUDENTS FOR PROGRAM</div><div style="font-size:13px;">${o.estStudents||'—'}</div></div>
+    </div>
+    ${o.address?`<div style="margin-top:10px;"><div style="font-size:10px;color:var(--t4);margin-bottom:2px;">ADDRESS</div><div style="font-size:13px;color:var(--t3);">${esc(o.address)}</div></div>`:''}
+    ${o.remarks?`<div style="margin-top:10px;"><div style="font-size:10px;color:var(--t4);margin-bottom:2px;">REMARKS</div><div style="font-size:13px;color:var(--t3);">${esc(o.remarks)}</div></div>`:''}
+  </div>
+  <div class="card">
+    <div class="sh"><div class="st">Engagements (${(o.engagements||[]).length})</div>
+    <button class="btn bp bsm" onclick="openAddEngagement('${id}')">+ Add Engagement</button></div>
+    <div id="eng-list">${renderEngagements(o)}</div>
+  </div>`;}
+
+function renderEngagements(o){const engs=o.engagements||[];
+  if(!engs.length)return`<div style="font-size:12px;color:var(--t4);">No engagements yet — add one above</div>`;
+  return engs.map((e,i)=>{const es=ENG_STATUS[e.status]||{label:e.status,cls:''};
+    return`<div class="eng-item"><div class="eng-header">
+      <div>
+        <div style="font-size:13px;font-weight:500;">${esc(e.description||'Engagement '+(i+1))}</div>
+        <div style="font-size:10px;color:var(--t4);">${fmtDate(e.date)||'No date'}</div>
+      </div>
+      <div class="row" style="gap:5px;">
+        <span class="${es.cls}" style="font-size:11px;font-weight:600;border:1px solid currentColor;padding:2px 8px;border-radius:99px;">${es.label}</span>
+        <button class="btn bg bsm" onclick="openEditEngagement('${o.id}','${e.id}')">Edit</button>
+        <button onclick="delEngagement('${o.id}','${e.id}')" style="background:none;border:none;cursor:pointer;color:var(--t4);font-size:11px;">✕</button>
+      </div></div>
+      ${e.notes?`<div style="font-size:12px;color:var(--t3);margin-top:5px;">${esc(e.notes)}</div>`:''}
+    </div>`;}).join('');}
+
+function closeOutDetail(){document.getElementById('out-detail').style.display='none';document.getElementById('out-list-view').style.display='block';renderOutreach();}
+
+function openNewOutreach(){const items=getOutreach();const nextSerial=items.length?Math.max(...items.map(o=>o.serialNo||0))+1:1;
+  showModal('New Outreach Entry',`
+    <div class="g2">
+      <div class="field"><label>Serial No.</label><input type="number" id="m-o-sn" value="${nextSerial}"></div>
+      <div class="field"><label>Institution Name *</label><input type="text" id="m-o-n" placeholder="ABC College"></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>No. of Students (Total)</label><input type="number" id="m-o-ns" placeholder="1000"></div>
+      <div class="field"><label>Est. Students for Program</label><input type="number" id="m-o-es" placeholder="200"></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>PoC Name</label><input type="text" id="m-o-poc" placeholder="Dr. Sharma"></div>
+      <div class="field"><label>Designation</label><input type="text" id="m-o-des" placeholder="Principal"></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Email</label><input type="text" id="m-o-em" placeholder="poc@college.edu"></div>
+      <div class="field"><label>Contact Number</label><input type="text" id="m-o-cn" placeholder="9999999999"></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>District</label><input type="text" id="m-o-di" placeholder="Pune"></div>
+      <div class="field"><label>State</label><input type="text" id="m-o-st" placeholder="Maharashtra"></div>
+    </div>
+    <div class="field"><label>Address</label><textarea id="m-o-ad" style="min-height:50px;" placeholder="Full address…"></textarea></div>
+    <div class="field"><label>Remarks</label><textarea id="m-o-rm" style="min-height:50px;" placeholder="General notes…"></textarea></div>
+    <div class="row" style="gap:8px;justify-content:flex-end;margin-top:14px;"><button class="btn bg" onclick="closeModal()">Cancel</button><button class="btn bp" onclick="saveOutreach()">Save</button></div>`);}
+
+function saveOutreach(){const name=document.getElementById('m-o-n').value.trim();if(!name){showToast('Enter institution name','error');return;}
+  const items=getOutreach();
+  const o={id:genId(),serialNo:parseInt(document.getElementById('m-o-sn').value)||items.length+1,
+    name,numberOfStudents:parseInt(document.getElementById('m-o-ns').value)||null,
+    estStudents:parseInt(document.getElementById('m-o-es').value)||null,
+    pocName:document.getElementById('m-o-poc').value.trim(),designation:document.getElementById('m-o-des').value.trim(),
+    email:document.getElementById('m-o-em').value.trim(),contactNumber:document.getElementById('m-o-cn').value.trim(),
+    district:document.getElementById('m-o-di').value.trim(),state:document.getElementById('m-o-st').value.trim(),
+    address:document.getElementById('m-o-ad').value.trim(),remarks:document.getElementById('m-o-rm').value.trim(),engagements:[]};
+  items.push(o);save(K.outreach,items);SUPA.push('outreach',o.id,o);closeModal();viewOutreach(o.id);showToast('✅ Entry saved!','success');}
+
+function openEditOutreach(id){const o=getOutreach().find(x=>x.id===id);if(!o)return;
+  showModal('Edit Outreach',`
+    <div class="g2">
+      <div class="field"><label>Serial No.</label><input type="number" id="m-o-sn" value="${o.serialNo||''}"></div>
+      <div class="field"><label>Institution Name *</label><input type="text" id="m-o-n" value="${esc(o.name||'')}"></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>No. of Students</label><input type="number" id="m-o-ns" value="${o.numberOfStudents||''}"></div>
+      <div class="field"><label>Est. Students</label><input type="number" id="m-o-es" value="${o.estStudents||''}"></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>PoC Name</label><input type="text" id="m-o-poc" value="${esc(o.pocName||'')}"></div>
+      <div class="field"><label>Designation</label><input type="text" id="m-o-des" value="${esc(o.designation||'')}"></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Email</label><input type="text" id="m-o-em" value="${esc(o.email||'')}"></div>
+      <div class="field"><label>Contact</label><input type="text" id="m-o-cn" value="${esc(o.contactNumber||'')}"></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>District</label><input type="text" id="m-o-di" value="${esc(o.district||'')}"></div>
+      <div class="field"><label>State</label><input type="text" id="m-o-st" value="${esc(o.state||'')}"></div>
+    </div>
+    <div class="field"><label>Address</label><textarea id="m-o-ad" style="min-height:50px;">${esc(o.address||'')}</textarea></div>
+    <div class="field"><label>Remarks</label><textarea id="m-o-rm" style="min-height:50px;">${esc(o.remarks||'')}</textarea></div>
+    <input type="hidden" id="m-o-id" value="${id}">
+    <div class="row" style="gap:8px;justify-content:flex-end;margin-top:14px;"><button class="btn bg" onclick="closeModal()">Cancel</button><button class="btn bp" onclick="updateOutreach()">Save</button></div>`);}
+
+function updateOutreach(){const id=document.getElementById('m-o-id').value;const items=getOutreach();const o=items.find(x=>x.id===id);if(!o)return;
+  o.serialNo=parseInt(document.getElementById('m-o-sn').value)||o.serialNo;
+  o.name=document.getElementById('m-o-n').value.trim();o.numberOfStudents=parseInt(document.getElementById('m-o-ns').value)||null;
+  o.estStudents=parseInt(document.getElementById('m-o-es').value)||null;o.pocName=document.getElementById('m-o-poc').value.trim();
+  o.designation=document.getElementById('m-o-des').value.trim();o.email=document.getElementById('m-o-em').value.trim();
+  o.contactNumber=document.getElementById('m-o-cn').value.trim();o.district=document.getElementById('m-o-di').value.trim();
+  o.state=document.getElementById('m-o-st').value.trim();o.address=document.getElementById('m-o-ad').value.trim();
+  o.remarks=document.getElementById('m-o-rm').value.trim();
+  save(K.outreach,items);SUPA.push('outreach',id,o);closeModal();viewOutreach(id);showToast('✅ Updated!','success');}
+
+function delOutreach(id){if(!confirm('Delete this outreach entry?'))return;
+  save(K.outreach,getOutreach().filter(o=>o.id!==id));SUPA.del('outreach',id);closeOutDetail();showToast('🗑 Deleted','success');}
+
+function openAddEngagement(outId){showModal('Add Engagement',`
+  <div class="field"><label>Engagement Description *</label><input type="text" id="m-e-d" placeholder="e.g. Workshop on AI Skills, Campus Seminar"></div>
+  <div class="field"><label>Planned Date</label><input type="date" id="m-e-dt"></div>
+  <div class="field"><label>Notes</label><textarea id="m-e-n" style="min-height:60px;" placeholder="Details, outcomes, follow-ups…"></textarea></div>
+  <div class="field"><label>Status</label><select id="m-e-s">
+    <option value="in-progress">In Progress</option>
+    <option value="completed">Completed</option>
+    <option value="no-movement">No Movement</option>
+    <option value="cancelled">Cancelled</option></select></div>
+  <div class="row" style="gap:8px;justify-content:flex-end;margin-top:14px;"><button class="btn bg" onclick="closeModal()">Cancel</button><button class="btn bp" onclick="saveEngagement('${outId}')">Add</button></div>`);}
+
+function saveEngagement(outId){const desc=document.getElementById('m-e-d').value.trim();if(!desc){showToast('Enter a description','error');return;}
+  const items=getOutreach();const o=items.find(x=>x.id===outId);if(!o)return;if(!o.engagements)o.engagements=[];
+  o.engagements.push({id:genId(),description:desc,date:document.getElementById('m-e-dt').value,
+    notes:document.getElementById('m-e-n').value.trim(),status:document.getElementById('m-e-s').value});
+  save(K.outreach,items);SUPA.push('outreach',outId,o);closeModal();document.getElementById('eng-list').innerHTML=renderEngagements(o);showToast('✅ Engagement added!','success');}
+
+function openEditEngagement(outId,engId){const o=getOutreach().find(x=>x.id===outId);const e=o?.engagements?.find(x=>x.id===engId);if(!e)return;
+  showModal('Edit Engagement',`
+    <div class="field"><label>Description *</label><input type="text" id="m-e-d" value="${esc(e.description||'')}"></div>
+    <div class="field"><label>Date</label><input type="date" id="m-e-dt" value="${e.date||''}"></div>
+    <div class="field"><label>Notes</label><textarea id="m-e-n" style="min-height:60px;">${esc(e.notes||'')}</textarea></div>
+    <div class="field"><label>Status</label><select id="m-e-s">
+      <option value="in-progress" ${e.status==='in-progress'?'selected':''}>In Progress</option>
+      <option value="completed" ${e.status==='completed'?'selected':''}>Completed</option>
+      <option value="no-movement" ${e.status==='no-movement'?'selected':''}>No Movement</option>
+      <option value="cancelled" ${e.status==='cancelled'?'selected':''}>Cancelled</option></select></div>
+    <div class="row" style="gap:8px;justify-content:flex-end;margin-top:14px;"><button class="btn bg" onclick="closeModal()">Cancel</button><button class="btn bp" onclick="updateEngagement('${outId}','${engId}')">Save</button></div>`);}
+
+function updateEngagement(outId,engId){const items=getOutreach();const o=items.find(x=>x.id===outId);const e=o?.engagements?.find(x=>x.id===engId);if(!e)return;
+  e.description=document.getElementById('m-e-d').value.trim();e.date=document.getElementById('m-e-dt').value;
+  e.notes=document.getElementById('m-e-n').value.trim();e.status=document.getElementById('m-e-s').value;
+  save(K.outreach,items);SUPA.push('outreach',outId,o);closeModal();document.getElementById('eng-list').innerHTML=renderEngagements(o);showToast('✅ Updated!','success');}
+
+function delEngagement(outId,engId){const items=getOutreach();const o=items.find(x=>x.id===outId);
+  if(o){o.engagements=(o.engagements||[]).filter(e=>e.id!==engId);save(K.outreach,items);SUPA.push('outreach',outId,o);document.getElementById('eng-list').innerHTML=renderEngagements(o);}}
+
+// EXCEL EXPORT — OUTREACH
+function exportOutreachExcel(){const items=getOutreach();if(!items.length){showToast('No outreach data to export','nudge');return;}
+  const rows=[];
+  items.forEach(o=>{const engs=o.engagements||[];
+    const baseRow={'S.No':o.serialNo||'','Institution Name':o.name||'','No. of Students':o.numberOfStudents||'',
+      'PoC Name':o.pocName||'','Designation':o.designation||'','Email':o.email||'',
+      'Contact Number':o.contactNumber||'','District':o.district||'','State':o.state||'',
+      'Address':o.address||'','Est. No. of Students':o.estStudents||'','Remarks':o.remarks||''};
+    engs.forEach((e,i)=>{baseRow[`Engagement ${i+1} - Description`]=e.description||'';
+      baseRow[`Engagement ${i+1} - Date`]=e.date||'';baseRow[`Engagement ${i+1} - Status`]=(ENG_STATUS[e.status]||{label:e.status}).label;
+      baseRow[`Engagement ${i+1} - Notes`]=e.notes||'';});
+    rows.push(baseRow);});
+  const ws=XLSX.utils.json_to_sheet(rows);
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Outreach');
+  XLSX.writeFile(wb,`Outreach_Report_${todayStr()}.xlsx`);showToast('✅ Excel downloaded!','success');}
+
+// ═══════════════════════════════════════════════════════════
+// MEETING TRACKER
+// ═══════════════════════════════════════════════════════════
+function renderMeetings(){
+  const search=(document.getElementById('meet-search')?.value||'').toLowerCase();
+  const filter=document.getElementById('meet-filter')?.value||'';
+  let meets=getMeetings().filter(m=>{
+    const ms=!search||m.institution?.toLowerCase().includes(search)||m.name?.toLowerCase().includes(search)||m.keyAgenda?.toLowerCase().includes(search)||m.district?.toLowerCase().includes(search)||m.state?.toLowerCase().includes(search);
+    return ms&&(!filter||m.status===filter);}).sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('meet-list').innerHTML=meets.length?`
+    <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead><tr style="background:var(--s2);">
+        ${['S.No','Date','Institution','Name','Designation','State','District','Key Agenda','Status','Actions'].map(h=>`<th style="padding:10px 12px;text-align:left;color:var(--t4);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;border-bottom:1px solid var(--border);">${h}</th>`).join('')}
+      </tr></thead>
+      <tbody>${meets.map((m,i)=>{
+        const sc=m.status==='scheduled'?'meet-sch':m.status==='completed'?'meet-done':'meet-can';
+        return`<tr style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="viewMeeting('${m.id}')">
+          <td style="padding:10px 12px;color:var(--t3);">${m.serialNo||i+1}</td>
+          <td style="padding:10px 12px;white-space:nowrap;">${fmtDate(m.date)}</td>
+          <td style="padding:10px 12px;font-weight:500;">${esc(m.institution||'—')}</td>
+          <td style="padding:10px 12px;">${esc(m.name||'—')}</td>
+          <td style="padding:10px 12px;color:var(--t3);">${esc(m.designation||'—')}</td>
+          <td style="padding:10px 12px;color:var(--t3);">${esc(m.state||'—')}</td>
+          <td style="padding:10px 12px;color:var(--t3);">${esc(m.district||'—')}</td>
+          <td style="padding:10px 12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(m.keyAgenda||'—')}</td>
+          <td style="padding:10px 12px;"><span class="badge ${sc}">${m.status||'scheduled'}</span></td>
+          <td style="padding:10px 12px;" onclick="event.stopPropagation()">
+            <div class="row" style="gap:4px;">
+              <button class="btn bg bsm" onclick="addToGCal('${m.id}')" title="Add to Google Calendar">📅</button>
+              <button class="btn bg bsm" onclick="downloadICS('${m.id}')" title="Download .ics">⬇</button>
+              <button class="btn bd bsm" onclick="delMeeting('${m.id}')">✕</button>
+            </div>
+          </td>
+        </tr>`;}).join('')}</tbody>
+    </table></div>` :`<div class="es"><h4>No meetings found</h4><p>Click "+ New" to schedule a meeting</p></div>`;}
+
+function viewMeeting(id){const meets=getMeetings();const m=meets.find(x=>x.id===id);if(!m)return;
+  const convs=getConvs();const linkedConv=convs.find(c=>c.id===m.linkedConvId);
+  document.getElementById('meet-list-view').style.display='none';
+  const det=document.getElementById('meet-detail');det.style.display='block';
+  det.innerHTML=`<div class="row" style="justify-content:space-between;margin-bottom:16px;">
+    <button class="btn bg bsm" onclick="closeMeetDetail()">← Back</button>
+    <div class="row" style="gap:6px;">
+      <button class="btn bg bsm" onclick="addToGCal('${id}')">📅 Add to Google Calendar</button>
+      <button class="btn bg bsm" onclick="downloadICS('${id}')">⬇ Download .ics</button>
+      <button class="btn bg bsm" onclick="openEditMeeting('${id}')">Edit</button>
+      <button class="btn bd bsm" onclick="delMeeting('${id}')">Delete</button>
+    </div></div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+      <div><h3 style="font-size:16px;font-weight:700;">${esc(m.institution||'Meeting')}</h3>
+      <div style="font-size:11px;color:var(--t4);margin-top:3px;">${fmtDate(m.date)}</div></div>
+      <span class="badge ${m.status==='scheduled'?'meet-sch':m.status==='completed'?'meet-done':'meet-can'}">${m.status||'scheduled'}</span>
+    </div>
+    <div class="g2" style="gap:8px;">
+      <div><div style="font-size:10px;color:var(--t4);">SERIAL NO.</div><div style="font-size:13px;">${m.serialNo||'—'}</div></div>
+      <div><div style="font-size:10px;color:var(--t4);">NAME</div><div style="font-size:13px;">${esc(m.name||'—')}</div></div>
+      <div><div style="font-size:10px;color:var(--t4);">DESIGNATION</div><div style="font-size:13px;">${esc(m.designation||'—')}</div></div>
+      <div><div style="font-size:10px;color:var(--t4);">STATE</div><div style="font-size:13px;">${esc(m.state||'—')}</div></div>
+      <div><div style="font-size:10px;color:var(--t4);">DISTRICT</div><div style="font-size:13px;">${esc(m.district||'—')}</div></div>
+    </div>
+    <div style="margin-top:12px;padding:12px;background:var(--s2);border-radius:var(--rs);">
+      <div style="font-size:10px;color:var(--t4);margin-bottom:4px;">KEY AGENDA</div>
+      <div style="font-size:13px;line-height:1.6;">${esc(m.keyAgenda||'—')}</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="sh"><div class="st">Linked Conversation</div>
+    <button class="btn bg bsm" onclick="openLinkMeetConv('${id}')">🔗 Link</button></div>
+    ${linkedConv?`<div class="cc" onclick="viewConv('${linkedConv.id}')">
+      <div style="font-size:13px;font-weight:500;">${esc(linkedConv.title)}</div>
+      <div style="font-size:10px;color:var(--t4);">${linkedConv.date} · ${linkedConv.type}</div></div>`
+      :`<div style="font-size:12px;color:var(--t4);">No linked conversation — click "🔗 Link" to connect</div>`}
+  </div>`;}
+
+function closeMeetDetail(){document.getElementById('meet-detail').style.display='none';document.getElementById('meet-list-view').style.display='block';renderMeetings();}
+
+function openNewMeetModal(){const meets=getMeetings();const nextSerial=meets.length?Math.max(...meets.map(m=>m.serialNo||0))+1:1;
+  showModal('New Meeting',`
+    <div class="g2">
+      <div class="field"><label>Serial No.</label><input type="number" id="m-m-sn" value="${nextSerial}"></div>
+      <div class="field"><label>Date *</label><input type="date" id="m-m-d" value="${todayStr()}"></div>
+    </div>
+    <div class="field"><label>Institution *</label><input type="text" id="m-m-inst" placeholder="ABC College / Ministry of Education"></div>
+    <div class="g2">
+      <div class="field"><label>Name</label><input type="text" id="m-m-nm" placeholder="Dr. Sharma"></div>
+      <div class="field"><label>Designation</label><input type="text" id="m-m-des" placeholder="Principal / Director"></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>State</label><input type="text" id="m-m-st" placeholder="Maharashtra"></div>
+      <div class="field"><label>District</label><input type="text" id="m-m-di" placeholder="Pune"></div>
+    </div>
+    <div class="field"><label>Key Agenda *</label><textarea id="m-m-ag" style="min-height:70px;" placeholder="What is this meeting about?"></textarea></div>
+    <div class="field"><label>Status</label><select id="m-m-s">
+      <option value="scheduled">Scheduled</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></div>
+    <div class="row" style="gap:8px;justify-content:flex-end;margin-top:14px;"><button class="btn bg" onclick="closeModal()">Cancel</button>
+    <button class="btn bg" onclick="closeModal();saveMeeting();addToGCal('__new__')">Save + Google Cal</button>
+    <button class="btn bp" onclick="saveMeeting()">Save</button></div>`);}
+
+function saveMeeting(andGcal){const inst=document.getElementById('m-m-inst').value.trim();if(!inst){showToast('Enter institution name','error');return;}
+  const meets=getMeetings();
+  const m={id:genId(),serialNo:parseInt(document.getElementById('m-m-sn').value)||meets.length+1,
+    date:document.getElementById('m-m-d').value,institution:inst,
+    name:document.getElementById('m-m-nm').value.trim(),designation:document.getElementById('m-m-des').value.trim(),
+    state:document.getElementById('m-m-st').value.trim(),district:document.getElementById('m-m-di').value.trim(),
+    keyAgenda:document.getElementById('m-m-ag').value.trim(),status:document.getElementById('m-m-s').value,linkedConvId:null};
+  meets.push(m);save(K.meetings,meets);SUPA.push('meetings',m.id,m);closeModal();renderMeetings();showToast('✅ Meeting scheduled!','success');
+  // schedule reminder
+  scheduleMeetingReminder(m);}
+
+function openEditMeeting(id){const m=getMeetings().find(x=>x.id===id);if(!m)return;
+  showModal('Edit Meeting',`
+    <div class="g2">
+      <div class="field"><label>Serial No.</label><input type="number" id="m-m-sn" value="${m.serialNo||''}"></div>
+      <div class="field"><label>Date</label><input type="date" id="m-m-d" value="${m.date||''}"></div>
+    </div>
+    <div class="field"><label>Institution</label><input type="text" id="m-m-inst" value="${esc(m.institution||'')}"></div>
+    <div class="g2">
+      <div class="field"><label>Name</label><input type="text" id="m-m-nm" value="${esc(m.name||'')}"></div>
+      <div class="field"><label>Designation</label><input type="text" id="m-m-des" value="${esc(m.designation||'')}"></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>State</label><input type="text" id="m-m-st" value="${esc(m.state||'')}"></div>
+      <div class="field"><label>District</label><input type="text" id="m-m-di" value="${esc(m.district||'')}"></div>
+    </div>
+    <div class="field"><label>Key Agenda</label><textarea id="m-m-ag" style="min-height:70px;">${esc(m.keyAgenda||'')}</textarea></div>
+    <div class="field"><label>Status</label><select id="m-m-s">
+      <option value="scheduled" ${m.status==='scheduled'?'selected':''}>Scheduled</option>
+      <option value="completed" ${m.status==='completed'?'selected':''}>Completed</option>
+      <option value="cancelled" ${m.status==='cancelled'?'selected':''}>Cancelled</option></select></div>
+    <input type="hidden" id="m-m-id" value="${id}">
+    <div class="row" style="gap:8px;justify-content:flex-end;margin-top:14px;"><button class="btn bg" onclick="closeModal()">Cancel</button><button class="btn bp" onclick="updateMeeting()">Save</button></div>`);}
+
+function updateMeeting(){const id=document.getElementById('m-m-id').value;const meets=getMeetings();const m=meets.find(x=>x.id===id);if(!m)return;
+  m.serialNo=parseInt(document.getElementById('m-m-sn').value)||m.serialNo;m.date=document.getElementById('m-m-d').value;
+  m.institution=document.getElementById('m-m-inst').value.trim();m.name=document.getElementById('m-m-nm').value.trim();
+  m.designation=document.getElementById('m-m-des').value.trim();m.state=document.getElementById('m-m-st').value.trim();
+  m.district=document.getElementById('m-m-di').value.trim();m.keyAgenda=document.getElementById('m-m-ag').value.trim();
+  m.status=document.getElementById('m-m-s').value;
+  save(K.meetings,meets);SUPA.push('meetings',id,m);closeModal();closeMeetDetail();renderMeetings();showToast('✅ Updated!','success');}
+
+function delMeeting(id){if(!confirm('Delete this meeting?'))return;
+  save(K.meetings,getMeetings().filter(m=>m.id!==id));SUPA.del('meetings',id);closeMeetDetail();renderMeetings();showToast('🗑 Deleted','success');}
+
+function openLinkMeetConv(meetId){const convs=getConvs();
+  showModal('Link to Conversation',`<div class="field"><label>Select conversation</label>
+    <select id="m-ml-c" style="width:100%;"><option value="">-- None --</option>
+    ${convs.map(c=>`<option value="${c.id}">${c.date} · ${esc(c.title)}</option>`).join('')}</select></div>
+    <div class="row" style="gap:8px;justify-content:flex-end;margin-top:14px;"><button class="btn bg" onclick="closeModal()">Cancel</button><button class="btn bp" onclick="doLinkMeetConv('${meetId}')">Link</button></div>`);}
+
+function doLinkMeetConv(meetId){const convId=document.getElementById('m-ml-c').value;
+  const meets=getMeetings();const m=meets.find(x=>x.id===meetId);if(!m)return;
+  m.linkedConvId=convId||null;save(K.meetings,meets);SUPA.push('meetings',meetId,m);closeModal();viewMeeting(meetId);showToast('✅ Linked!','success');}
+
+// GOOGLE CALENDAR & ICS
+function addToGCal(id){const meets=getMeetings();const m=meets.find(x=>x.id===id);if(!m)return;
+  const d=m.date.replace(/-/g,'');
+  const params=new URLSearchParams({action:'TEMPLATE',
+    text:`Meeting at ${m.institution}${m.designation&&m.name?' — '+m.name+' ('+m.designation+')':''}`,
+    dates:`${d}T090000/${d}T100000`,
+    details:m.keyAgenda+(m.name?'\n\nWith: '+m.name+' ('+m.designation+')':''),
+    location:[m.district,m.state].filter(Boolean).join(', ')});
+  window.open('https://calendar.google.com/calendar/render?'+params.toString(),'_blank');
+  showToast('✅ Opening Google Calendar…','success');}
+
+function downloadICS(id){const meets=getMeetings();const m=meets.find(x=>x.id===id);if(!m)return;
+  const d=m.date.replace(/-/g,'');const uid=genId()+'@mindpalace';
+  const ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//The Mind Palace//EN\r\nBEGIN:VEVENT\r\nUID:${uid}\r\nDTSTAMP:${new Date().toISOString().replace(/[-:.]/g,'').slice(0,15)}Z\r\nDTSTART:${d}T090000\r\nDTEND:${d}T100000\r\nSUMMARY:Meeting at ${m.institution}\r\nDESCRIPTION:${(m.keyAgenda||'').replace(/\n/g,'\\n')} — With: ${m.name||''} (${m.designation||''})\r\nLOCATION:${[m.district,m.state].filter(Boolean).join(', ')}\r\nEND:VEVENT\r\nEND:VCALENDAR`;
+  const blob=new Blob([ics],{type:'text/calendar'});const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download=`meeting_${m.date}_${(m.institution||'meeting').replace(/[^a-z0-9]/gi,'_')}.ics`;
+  a.click();showToast('✅ .ics file downloaded!','success');}
+
+// EXCEL EXPORT — MEETINGS
+function exportMeetingsExcel(){const meets=getMeetings();if(!meets.length){showToast('No meetings to export','nudge');return;}
+  const data=meets.sort((a,b)=>a.date.localeCompare(b.date)).map(m=>({
+    'Serial No.':m.serialNo||'','Date':m.date,'Institution':m.institution||'','Name':m.name||'',
+    'Designation':m.designation||'','State':m.state||'','District':m.district||'',
+    'Key Agenda':m.keyAgenda||'','Status':m.status||'scheduled'}));
+  const ws=XLSX.utils.json_to_sheet(data);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Meetings');
+  ws['!cols']=[{wch:8},{wch:12},{wch:30},{wch:20},{wch:20},{wch:15},{wch:15},{wch:50},{wch:12}];
+  XLSX.writeFile(wb,`Meetings_Report_${todayStr()}.xlsx`);showToast('✅ Excel downloaded!','success');}
+
+// MEETING REMINDER
+function scheduleMeetingReminder(m){if(!m.date||!m.institution)return;
+  const meetDate=new Date(m.date+'T08:00:00');const now=new Date();
+  const diff=meetDate-now;if(diff>0&&diff<48*3600*1000){
+    setTimeout(()=>{if(Notification.permission==='granted'){new Notification('📅 Meeting Today — The Mind Palace',{body:`${m.institution}: ${m.keyAgenda?.slice(0,80)||'No agenda'}`});}
+      showToast(`📅 Meeting today: ${m.institution}`,'reminder');},diff);}}
+
+// ═══════════════════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════════════════
+function renderSettings(){const s=getSettings();
+  document.getElementById('s-api').value=s.apiKey||'';
+  document.getElementById('s-sup-url').value=s.supabaseUrl||'';
+  document.getElementById('s-sup-key').value=s.supabaseKey||'';
+  document.getElementById('s-sync-key').value=s.syncKey||'';
+  document.getElementById('s-fy-start').value=s.fyStart||1;
+  document.getElementById('s-fy-year').value=s.fyYear||new Date().getFullYear();}
+
+function toggleKey(id){const el=document.getElementById(id);el.type=el.type==='password'?'text':'password';}
+function saveApiKey(){const s=getSettings();s.apiKey=document.getElementById('s-api').value.trim();save(K.settings,s);showToast('✅ API key saved!','success');}
+
+function saveSupabase(){const s=getSettings();
+  s.supabaseUrl=document.getElementById('s-sup-url').value.trim().replace(/\/$/,'');
+  s.supabaseKey=document.getElementById('s-sup-key').value.trim();
+  s.syncKey=document.getElementById('s-sync-key').value.trim();
+  save(K.settings,s);showToast('✅ Supabase configured! Pulling data…','success');
+  pullAll().then(ok=>{document.getElementById('sync-status-text').textContent=ok?'✅ Connected':'❌ Check credentials';setSyncDot(ok);});}
+
+function saveFY(){const s=getSettings();
+  s.fyStart=parseInt(document.getElementById('s-fy-start').value);
+  s.fyYear=parseInt(document.getElementById('s-fy-year').value)||new Date().getFullYear();
+  save(K.settings,s);generateQuarters();showToast('✅ Quarters regenerated!','success');}
+
+function generateQuarters(){const s=getSettings();const fy=s.fyStart||1;const yr=s.fyYear||new Date().getFullYear();
+  const existing=getQuarterly();const gmap={};(existing.quarters||[]).forEach(q=>{gmap[q.id]=q.goals||[];});
+  const quarters=[];const qn=['Q1','Q2','Q3','Q4'];
+  for(let i=0;i<4;i++){const sm=(fy-1+i*3)%12;const sy=yr+Math.floor((fy-1+i*3)/12);
+    const em=(sm+2)%12;const ey=sy+Math.floor((sm+2)/12);
+    const sd=new Date(sy,sm,1);const ed=new Date(ey,em+1,0);const id='q'+(i+1);
+    quarters.push({id,name:`${qn[i]} ${sy}${sy!==ey?'/'+String(ey).slice(2):''}`,
+      startDate:sd.toISOString().slice(0,10),endDate:ed.toISOString().slice(0,10),goals:gmap[id]||[]});}
+  const q={quarters};save(K.quarterly,q);SUPA.push('quarterly','singleton',q);}
+
+function clearAll(){if(!confirm('Delete ALL local data? This cannot be undone.'))return;
+  Object.values(K).forEach(k=>localStorage.removeItem(k));showToast('🗑 Data cleared','success');setTimeout(()=>location.reload(),1200);}
+
+// ═══════════════════════════════════════════════════════════
+// REMINDER SYSTEM
+// ═══════════════════════════════════════════════════════════
+const REM_TIMES=['13:30','16:00'];
+function startReminders(){checkReminders();setInterval(checkReminders,30000);}
+function checkReminders(){const now=new Date();const ts=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const d=todayStr();const s=getSettings();if(!s.remindersSent)s.remindersSent={};if(!s.remindersSent[d])s.remindersSent[d]=[];
+  for(const rt of REM_TIMES){if(ts===rt&&!s.remindersSent[d].includes(rt)){fireReminder(rt);s.remindersSent[d].push(rt);save(K.settings,s);}}}
+
+function fireReminder(time){const todos=getTodos()[todayStr()]||[];const rem=todos.filter(t=>!t.done).length;if(rem===0)return;
+  const label=time==='13:30'?'1:30 PM':'4:00 PM';const msg=`${rem} task${rem>1?'s':''} remaining today`;
+  showToast(`🔔 ${label} — ${msg}`,'reminder');
+  if(Notification.permission==='granted')new Notification('The Mind Palace — Reminder',{body:msg,
+    icon:`data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%236366f1'/><text x='16' y='22' text-anchor='middle' font-size='18' fill='white'>🏛</text></svg>`});}
+
+// Nudges
+function checkNudges(){const last=localStorage.getItem('mp_nudge');if(last===todayStr())return;
+  const curQ=currentQuarter();if(!curQ)return;const ar=(curQ.goals||[]).filter(g=>g.status==='at-risk'||g.status==='off-track');
+  if(!ar.length)return;setTimeout(()=>{showToast(`⚠️ ${ar.length} quarterly goal${ar.length>1?'s are':' is'} at risk — check Quarterly Goals!`,'nudge');localStorage.setItem('mp_nudge',todayStr());},3000);}
+
+// Schedule reminders for upcoming meetings
+function checkMeetingReminders(){const meets=getMeetings().filter(m=>m.status==='scheduled');meets.forEach(scheduleMeetingReminder);}
+
+// ═══════════════════════════════════════════════════════════
+// MODAL & TOAST
+// ═══════════════════════════════════════════════════════════
+function showModal(title,html){document.getElementById('mc').innerHTML=`<h3>${title}</h3>${html}`;document.getElementById('mo').classList.add('open');}
+function closeModal(){document.getElementById('mo').classList.remove('open');}
+document.getElementById('mo').addEventListener('click',function(e){if(e.target===this)closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+function showToast(msg,type='info'){const c=document.getElementById('tc');const t=document.createElement('div');
+  t.className=`toast ${type}`;t.textContent=msg;c.appendChild(t);setTimeout(()=>t.remove(),4500);}
+
+// ═══════════════════════════════════════════════════════════
+// PWA SERVICE WORKER
+// ═══════════════════════════════════════════════════════════
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+(function init(){
+  document.getElementById('sidebar-date').textContent=new Date().toLocaleDateString('en-IN',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+  if(!getQuarterly().quarters.length)generateQuarters();
+  // Pull from Supabase on load
+  const s=getSettings();
+  if(s.supabaseUrl&&s.supabaseKey&&s.syncKey)pullAll().then(ok=>setSyncDot(ok));
+  startReminders();checkNudges();checkMeetingReminders();navigate('dashboard');
+})();
+</script>
+</body>
+</html>

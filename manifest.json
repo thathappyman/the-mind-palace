@@ -2,8 +2,8 @@
   "name": "The Mind Palace",
   "short_name": "Mind Palace",
   "description": "Personal Productivity Suite — Plans, Goals, Meetings, Projects & Outreach",
-  "start_url": "/",
-  "start_url": "/the-mind-palace/"
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#0a0e1a",
@@ -11,7 +11,7 @@
   "categories": ["productivity", "business"],
   "icons": [
     {
-      "src": "icon.svg",
+      "src": "./icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
@@ -21,17 +21,17 @@
   "shortcuts": [
     {
       "name": "Dashboard",
-      "url": "/?page=dashboard",
+      "url": "./index.html",
       "description": "Open Dashboard"
     },
     {
       "name": "To-Do List",
-      "url": "/?page=todo",
+      "url": "./index.html",
       "description": "Open today's tasks"
     },
     {
       "name": "Meetings",
-      "url": "/?page=meetings",
+      "url": "./index.html",
       "description": "Open Meeting Tracker"
     }
   ]

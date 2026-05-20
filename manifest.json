@@ -3,7 +3,7 @@
   "short_name": "Mind Palace",
   "description": "Personal Productivity Suite — Plans, Goals, Meetings, Projects & Outreach",
   "start_url": "/",
-  "scope": "/the-mind-palace/",
+  "start_url": "/the-mind-palace/"
   "display": "standalone",
   "orientation": "any",
   "background_color": "#0a0e1a",

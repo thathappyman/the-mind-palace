@@ -677,7 +677,7 @@ function loadDailyGoals(){const d=document.getElementById('daily-date').value;co
       </div>`).join('')
     :`<div class="es" style="padding:20px 0;"><h4>No goals for this day</h4><p>Click AI Suggest or add manually</p></div>`}
     </div>
-    ${dd.aiGenerated?`<div class="ais"><h4>✦ AI Generated at ${dd.generatedAt||'—'}</h4><p style="font-size:11px;color:var(--t3);">Based on your active quarterly goals.</p></div>`:'`}`}`;}
+    ${dd.aiGenerated?`<div class="ais"><h4>✦ AI Generated at ${dd.generatedAt||'—'}</h4><p style="font-size:11px;color:var(--t3);">Based on your active quarterly goals.</p></div>`:''}`;}
 
 function toggleDailyGoal(id){const d=document.getElementById('daily-date').value;const daily=getDaily();if(!daily[d])return;
   const g=daily[d].goals.find(g=>g.id===id);if(g){g.done=!g.done;save(K.daily,daily);SUPA.push('daily',d,daily[d]);loadDailyGoals();}}
